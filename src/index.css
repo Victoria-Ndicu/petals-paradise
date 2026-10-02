@@ -1,0 +1,95 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Italiana&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-forest: #244a3a;
+  --color-forest-light: #345f4d;
+  --color-sage: #a8bfa8;
+  --color-ivory: #faf7f0;
+  --color-blush: #d9a6a6;
+  --color-rose: #b9797b;
+  --color-rose-dark: #a86e70;
+  --color-gold: #c9a96e;
+  --color-gold-light: #e2c991;
+  --color-charcoal: #292929;
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: "Italiana", serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--color-ivory);
+  font-family: var(--font-sans);
+}
+
+button, a, input, select, textarea { outline-offset: 3px; }
+button, a, select { cursor: pointer; }
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-rose-dark);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.eyebrow::before {
+  width: 2rem;
+  height: 1px;
+  background: var(--color-gold);
+  content: "";
+}
+
+.section-title {
+  margin-top: 0.7rem;
+  color: var(--color-forest);
+  font-family: var(--font-serif);
+  font-size: clamp(2.75rem, 5vw, 4.25rem);
+  line-height: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  color: color-mix(in srgb, var(--color-charcoal) 65%, transparent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--color-forest) 15%, transparent);
+  border-radius: 0.65rem;
+  background: transparent;
+  padding: 0.9rem 1rem;
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--color-gold); }
+.field input::placeholder, .field textarea::placeholder { color: color-mix(in srgb, var(--color-charcoal) 35%, transparent); }
+
+img {
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--color-forest) 12%, transparent);
+  transition: transform 0.45s ease, box-shadow 0.45s ease, border-color 0.45s ease;
+}
+
+img:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--color-gold) 55%, var(--color-forest) 12%);
+  box-shadow: 0 18px 30px rgba(36, 74, 58, 0.12);
+}
+
+@media (max-width: 639px) {
+  .section-title { font-size: 2.8rem; }
+}
