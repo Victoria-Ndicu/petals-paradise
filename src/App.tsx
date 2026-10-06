@@ -241,7 +241,7 @@ function App() {
               <label className="field"><span>Your name</span><input required placeholder="Jane Wanjiku" /></label>
               <label className="field"><span>Phone number</span><input required type="tel" placeholder="+254 7..." /></label>
               <label className="field"><span>What are you planning?</span><select defaultValue=""><option value="" disabled>Select an occasion</option><option>Flower delivery</option><option>Wedding</option><option>Event décor</option><option>Flower maintenance</option></select></label>
-              <label className="field"><span>Preferred contact</span><select><option>WhatsApp</option><option>Call</option><option>Email</option></select></label>
+              <label className="field"><span>Preferred contact</span><select><option>WhatsApp</option><option>Call</option></select></label>
               <label className="field sm:col-span-2"><span>Tell us more</span><textarea rows={4} placeholder="Date, colours, style, budget or any special requests..." /></label>
               <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-6 py-4 text-sm font-semibold text-ivory transition hover:bg-forest-light sm:col-span-2">Send an inquiry <Icon name="arrow" className="size-4" /></button>
             </form>
