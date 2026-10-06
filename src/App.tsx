@@ -166,19 +166,16 @@ function App() {
       </div>}
 
       <main>
-        <section className="relative h-full min-h-[calc(100vh-7rem)] border border-black bg-sage/25">
-          <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-12 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-16">
-            <div className="relative z-10 py-6 lg:py-14">
-              <p className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-forest"><span className="h-px w-10 bg-gold" /> Flowers for every feeling</p>
-              <h1 className="max-w-2xl font-serif text-6xl leading-[0.92] text-forest sm:text-7xl lg:text-[5.6rem]">Beautiful flowers, <em className="font-light text-rose-dark">thoughtfully</em> designed.</h1>
-              <p className="mt-7 max-w-lg text-base leading-7 text-charcoal/65 sm:text-lg">From everyday bouquets to weddings and special events, we create artful floral arrangements tailored to your moment.</p>
-              <div className="mt-8 flex flex-wrap gap-3"><ButtonLink href="#shop">Shop flowers <Icon name="arrow" className="size-4" /></ButtonLink><ButtonLink href="#services" variant="outline">Explore services</ButtonLink></div>
-              <div className="mt-10 flex items-center gap-7 border-t border-forest/15 pt-7 text-sm text-charcoal/60"><span className="flex items-center gap-2"><Icon name="pin" className="size-4 text-gold" /> Westlands, Nairobi</span><span className="flex items-center gap-2"><Icon name="sparkle" className="size-4 text-gold" /> Made to order</span></div>
-            </div>
-            <div className="relative mx-auto w-full max-w-2xl lg:ml-auto">
-              <div className="absolute -left-8 bottom-16 z-10 hidden rounded-xl bg-ivory p-4 shadow-xl sm:flex sm:items-center sm:gap-3"><span className="grid size-10 place-items-center rounded-full bg-blush/45 text-forest"><Icon name="heart" className="size-4" /></span><span><strong className="block font-serif text-lg text-forest">Made with love</strong><small className="text-charcoal/50">Fresh, hand-selected blooms</small></span></div>
-              <div className="aspect-[4/5] overflow-hidden rounded-none"><img src={images.hero} alt="Pink and white floral bouquet by Petals Paradise" className="h-full w-full object-cover" /></div>
-              <div className="absolute -right-4 -top-4 size-24 rounded-full border border-gold/60 sm:-right-7 sm:size-32" />
+        <section className="relative isolate flex min-h-[calc(100svh-7rem)] items-center overflow-hidden bg-forest">
+          <img src={images.hero} alt="Pink and white floral bouquet by Petals Paradise" className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover" />
+          <div className="absolute inset-0 -z-10 bg-forest/60" />
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 text-center text-ivory sm:py-20 lg:px-8 lg:py-24">
+            <div className="mx-auto max-w-6xl">
+              <p className="mb-6 flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-gold-light"><span className="h-px w-10 bg-gold" /> Flowers for every feeling <span className="h-px w-10 bg-gold" /></p>
+              <h1 className="font-serif text-6xl leading-[0.95] sm:text-7xl lg:text-[7rem]">Beautiful flowers, <em className="font-light text-gold-light">thoughtfully</em> designed.</h1>
+              <p className="mx-auto mt-7 max-w-3xl text-base leading-7 text-ivory/90 sm:text-lg">From everyday bouquets to weddings and special events, we create artful floral arrangements tailored to your moment.</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3"><ButtonLink href="#shop" variant="light">Shop flowers <Icon name="arrow" className="size-4" /></ButtonLink><ButtonLink href="#services" className="border border-ivory/70 text-ivory hover:bg-ivory/10">Explore services</ButtonLink></div>
+              <div className="mx-auto mt-10 flex max-w-xl flex-wrap items-center justify-center gap-x-7 gap-y-3 border-t border-ivory/35 pt-7 text-sm text-ivory/85"><span className="flex items-center gap-2"><Icon name="pin" className="size-4 text-gold-light" /> Westlands, Nairobi</span><span className="flex items-center gap-2"><Icon name="sparkle" className="size-4 text-gold-light" /> Made to order</span></div>
             </div>
           </div>
         </section>
@@ -257,7 +254,7 @@ function App() {
           <div><a href="#" className="flex items-center gap-3 font-serif text-2xl"><LogoMark /> PETALS PARADISE</a><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/50">Thoughtful flowers for everyday moments, meaningful celebrations and unforgettable events.</p><a href="#" aria-label="Instagram" className="mt-5 grid size-10 place-items-center rounded-full border border-ivory/20"><Icon name="instagram" className="size-4" /></a></div>
           <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Explore</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#shop">Shop flowers</a><a href="#services">Services</a><a href="#our-work">Our work</a><a href="#about">Our story</a></div></div>
           <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Order</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#contact">Request a quote</a><a href="https://wa.me/254728829124">WhatsApp us</a><a href="tel:+254728829124">Call us</a><a href="#shop">Delivery info</a></div></div>
-          <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Visit our studio</h3><p className="mt-5 text-sm leading-6 text-ivory/60">Westlands, Nairobi<br />Monday – Saturday<br />8:00am – 6:00pm</p></div>
+          <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Visit our studio</h3><p className="mt-5 text-sm leading-6 text-ivory/60">359Jalaram Road, Westlands, Nairobi<br />Monday – Sunday<br />8:00am – 6:00pm</p></div>
         </div>
         <div className="mx-auto flex max-w-7xl flex-col gap-2 pt-7 text-xs text-ivory/35 sm:flex-row sm:justify-between"><span>© 2025 Petals Paradise. All rights reserved.</span><span>Flowers made with intention in Nairobi.</span></div>
       </footer>
