@@ -11,6 +11,40 @@ const images = {
   eventDetail: "https://images.unsplash.com/photo-1710587384835-0f3de33d8042?auto=format&fit=crop&w=1000&q=85",
   florist: "https://images.unsplash.com/photo-1642751652611-bb9a7cad58a3?auto=format&fit=crop&w=1000&q=85",
   arch: "https://images.unsplash.com/photo-1639986098217-17112e22f1ed?auto=format&fit=crop&w=1000&q=85",
+  funeralHeart: "https://images.openai.com/static-rsc-4/M99-2HruL0F7k_uz67sfAH09su4rsIJmqKQFpGhMmU5GR9NIPDdU6MfzfsySOxljqM2o_JVnIm1FCc0QMBlbef9e5Qd6eqam126sOwX1ehgNDC3sKLxuwyfsP6Cw1j8QaIdwiGItb-nmug0T65TwlWw3X8Yj_JQPDwiSt_6xHDY?purpose=inline",
+};
+
+const serviceDetails = {
+  "flower-maintenance": {
+    eyebrow: "Ongoing care",
+    title: "Flower maintenance",
+    intro: "Keep your spaces feeling fresh with regular floral styling and attentive care, tailored to your home or business.",
+    flowers: [
+      { title: "Seasonal arrangements", image: images.garden, description: "Fresh, changing blooms styled to complement your space." },
+      { title: "Vase refreshes", image: images.white, description: "A considered refresh for reception areas, homes and tables." },
+      { title: "Floral styling", image: images.florist, description: "Practical care and thoughtful placement for lasting beauty." },
+    ],
+  },
+  "events-decor": {
+    eyebrow: "Bespoke design",
+    title: "Events & décor",
+    intro: "Personal floral styling for weddings, intimate celebrations and gatherings, designed around your setting and story.",
+    flowers: [
+      { title: "Wedding flowers", image: images.arch, description: "Bouquets and floral details made to feel like you." },
+      { title: "Table flowers", image: images.eventDetail, description: "Considered centrepieces for dinners and celebrations." },
+      { title: "Venue styling", image: images.event, description: "Floral touches that bring your event space together." },
+    ],
+  },
+  "funeral-sympathy": {
+    eyebrow: "With care",
+    title: "Funeral & sympathy flowers",
+    intro: "Thoughtful floral tributes to honour a life and offer comfort, prepared with care for the service or family home.",
+    flowers: [
+      { title: "Heart-shaped tribute", image: images.funeralHeart, description: "A gentle floral expression of love and remembrance." },
+      { title: "Sympathy bouquet", image: images.white, description: "Soft, seasonal flowers to share with the family." },
+      { title: "Service flowers", image: images.garden, description: "Considered arrangements for a place of gathering or remembrance." },
+    ],
+  },
 };
 
 type IconName =
@@ -122,6 +156,57 @@ function ProductCard({ product }: { product: typeof products[number] }) {
   );
 }
 
+function ServiceDetail({ slug }: { slug: string }) {
+  const service = serviceDetails[slug as keyof typeof serviceDetails];
+  if (!service) {
+    return (
+      <section className="px-5 py-24 text-center">
+        <p className="eyebrow justify-center">Our services</p>
+        <h1 className="section-title">Service not found</h1>
+        <a href="#services" className="mt-8 inline-flex items-center gap-2 font-semibold text-forest">Back to services <Icon name="arrow" className="size-4" /></a>
+      </section>
+    );
+  }
+
+  return (
+    <>
+      <section className="bg-forest px-5 py-16 text-center text-ivory sm:py-24">
+        <div className="mx-auto max-w-3xl">
+          <a href="#services" className="inline-flex items-center gap-2 text-sm text-ivory/70 transition hover:text-ivory"><Icon name="arrow" className="size-4 rotate-180" /> All services</a>
+          <p className="eyebrow mt-8 justify-center !text-gold">{service.eyebrow}</p>
+          <h1 className="mt-3 font-serif text-5xl leading-tight sm:text-7xl">{service.title}</h1>
+          <p className="mx-auto mt-5 max-w-2xl leading-7 text-ivory/70">{service.intro}</p>
+          <a href="#contact" className="mt-8 inline-flex items-center gap-2 rounded-full bg-ivory px-6 py-3.5 text-sm font-semibold text-forest transition hover:bg-white">Ask us about this service <Icon name="arrow" className="size-4" /></a>
+        </div>
+      </section>
+      <section className="px-5 py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center">
+            <p className="eyebrow justify-center">Made with intention</p>
+            <h2 className="section-title">Floral ideas for {service.title.toLowerCase()}</h2>
+          </div>
+          <div className="mt-10 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+            {service.flowers.map((flower) => (
+              <article key={flower.title} className="overflow-hidden rounded-2xl bg-white shadow-sm">
+                <img src={flower.image} alt={flower.title} className="aspect-[4/3] w-full object-cover" />
+                <div className="p-6">
+                  <h3 className="font-serif text-2xl text-forest">{flower.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-charcoal/60">{flower.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="mt-12 rounded-2xl bg-blush/20 px-6 py-8 text-center">
+            <p className="font-serif text-2xl text-forest">Looking for something personal?</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-charcoal/60">Tell us about your needs and our florists will help you choose the right flowers and arrangements.</p>
+            <a href="#contact" className="mt-5 inline-flex items-center gap-2 rounded-full bg-forest px-6 py-3.5 text-sm font-semibold text-ivory transition hover:bg-forest-light">Request a quote <Icon name="arrow" className="size-4" /></a>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [galleryFilter, setGalleryFilter] = useState("All");
@@ -141,6 +226,10 @@ function App() {
 
   // When leaving the shop for a landing section (e.g. #services), scroll to it once the page has rendered.
   useEffect(() => {
+    if (route.startsWith("/services/")) {
+      window.scrollTo({ top: 0 });
+      return;
+    }
     if (inShop || !route || route === "/") return;
     const t = setTimeout(() => document.getElementById(route)?.scrollIntoView(), 50);
     return () => clearTimeout(t);
@@ -175,7 +264,9 @@ function App() {
       </div>}
 
       <main>
-        {inShop ? (
+        {route.startsWith("/services/") ? (
+          <ServiceDetail slug={route.slice("/services/".length)} />
+        ) : inShop ? (
           <ShopRouter route={route} />
         ) : (
           <>
@@ -211,11 +302,15 @@ function App() {
                   <div className="grid gap-5 sm:grid-cols-2">
                     <article className="group overflow-hidden rounded-2xl bg-ivory/5">
                       <div className="h-64 overflow-hidden"><img src={images.florist} alt="Florist maintaining a flower arrangement" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
-                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">01 · Ongoing care</span><h3 className="mt-3 font-serif text-3xl">Flower maintenance</h3><p className="mt-3 text-sm leading-6 text-ivory/55">Regular styling, refreshing and care for flowers in your home, office, hotel or restaurant.</p><a href="#contact" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Book this service <Icon name="arrow" className="size-4" /></a></div>
+                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">01 · Ongoing care</span><h3 className="mt-3 font-serif text-3xl">Flower maintenance</h3><p className="mt-3 text-sm leading-6 text-ivory/55">Regular styling, refreshing and care for flowers in your home, office, hotel or restaurant.</p><a href="#/services/flower-maintenance" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
                     </article>
                     <article className="group overflow-hidden rounded-2xl bg-ivory/5 sm:translate-y-8">
                       <div className="h-64 overflow-hidden"><img src={images.event} alt="Elegant event table decorated with flowers" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
-                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">02 · Bespoke design</span><h3 className="mt-3 font-serif text-3xl">Events & décor</h3><p className="mt-3 text-sm leading-6 text-ivory/55">From bridal bouquets to floral arches and tablescapes, we design every detail around your story.</p><a href="#contact" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Plan your event <Icon name="arrow" className="size-4" /></a></div>
+                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">02 · Bespoke design</span><h3 className="mt-3 font-serif text-3xl">Events & décor</h3><p className="mt-3 text-sm leading-6 text-ivory/55">From bridal bouquets to floral arches and tablescapes, we design every detail around your story.</p><a href="#/services/events-decor" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
+                    </article>
+                    <article className="group overflow-hidden rounded-2xl bg-ivory/5">
+                      <div className="h-64 overflow-hidden"><img src={images.funeralHeart} alt="Heart-shaped white funeral flower tribute" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
+                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">03 · With care</span><h3 className="mt-3 font-serif text-3xl">Funeral & sympathy flowers</h3><p className="mt-3 text-sm leading-6 text-ivory/55">Thoughtful floral tributes to honour a life and offer comfort, with delivery to the service or family home.</p><a href="#/services/funeral-sympathy" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
                     </article>
                   </div>
                 </div>
@@ -253,7 +348,7 @@ function App() {
                 <form className="grid gap-5 rounded-3xl bg-ivory p-6 shadow-sm sm:grid-cols-2 sm:p-9" onSubmit={(event) => event.preventDefault()}>
                   <label className="field"><span>Your name</span><input required placeholder="Jane Wanjiku" /></label>
                   <label className="field"><span>Phone number</span><input required type="tel" placeholder="+254 7..." /></label>
-                  <label className="field"><span>What are you planning?</span><select defaultValue=""><option value="" disabled>Select an occasion</option><option>Flower delivery</option><option>Wedding</option><option>Event décor</option><option>Flower maintenance</option></select></label>
+                  <label className="field"><span>What are you planning?</span><select defaultValue=""><option value="" disabled>Select an occasion</option><option>Flower delivery</option><option>Wedding</option><option>Event décor</option><option>Flower maintenance</option><option>Funeral & sympathy flowers</option></select></label>
                   <label className="field"><span>Preferred contact</span><select><option>WhatsApp</option><option>Call</option></select></label>
                   <label className="field sm:col-span-2"><span>Tell us more</span><textarea rows={4} placeholder="Date, colours, style, budget or any special requests..." /></label>
                   <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-6 py-4 text-sm font-semibold text-ivory transition hover:bg-forest-light sm:col-span-2">Send an inquiry <Icon name="arrow" className="size-4" /></button>

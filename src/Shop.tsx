@@ -8,6 +8,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 /* ------------------------------------------------------------------ */
 /*  Data (swap for your API / database later)                          */
@@ -635,6 +636,7 @@ function AuthForm({ heading, sub }: { heading: string; sub: string }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [f, setF] = useState({ name: "", phone: "", email: "", identifier: "", password: "" });
   const [err, setErr] = useState("");
+  const [socialNotice, setSocialNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((s) => ({ ...s, [k]: e.target.value }));
 
@@ -660,10 +662,34 @@ function AuthForm({ heading, sub }: { heading: string; sub: string }) {
 
         <div className="mt-8 grid grid-cols-2 rounded-full bg-sage/20 p-1">
           {(["login", "signup"] as const).map((m) => (
-            <button key={m} type="button" onClick={() => { setMode(m); setErr(""); }} className={`rounded-full py-2.5 text-sm font-semibold transition ${mode === m ? "bg-forest text-ivory" : "text-charcoal/60"}`}>
+            <button key={m} type="button" onClick={() => { setMode(m); setErr(""); setSocialNotice(""); }} className={`rounded-full py-2.5 text-sm font-semibold transition ${mode === m ? "bg-forest text-ivory" : "text-charcoal/60"}`}>
               {m === "login" ? "Sign in" : "Create account"}
             </button>
           ))}
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button type="button" onClick={() => setSocialNotice("Google sign-in will be available once the authentication backend is connected.")} className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-forest/15 bg-white px-4 py-3 text-sm font-semibold text-charcoal transition hover:bg-sage/10">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.91 3.27-4.73 3.27-8.1Z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.15v2.84A11 11 0 0 0 12 23Z" />
+              <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.15a11 11 0 0 0 0 9.9l3.69-2.84Z" />
+              <path fill="#EA4335" d="M12 5.36c1.62 0 3.07.56 4.21 1.64l3.15-3.15C17.45 2.03 14.97 1 12 1a11 11 0 0 0-9.85 6.05l3.69 2.84C6.71 7.29 9.14 5.36 12 5.36Z" />
+            </svg>
+            Continue with Google
+          </button>
+          <button type="button" onClick={() => setSocialNotice("Apple sign-in will be available once the authentication backend is connected.")} className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-forest/15 bg-white px-4 py-3 text-sm font-semibold text-charcoal transition hover:bg-sage/10">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 fill-current">
+              <path d="M17.05 12.54c.02 2.14 1.88 2.85 1.9 2.86-.02.05-.3 1.04-.98 2.06-.59.88-1.2 1.75-2.16 1.77-.94.02-1.25-.57-2.33-.57-1.08 0-1.42.55-2.31.59-.92.04-1.62-.95-2.22-1.83-1.23-1.79-2.17-5.06-.91-7.27a3.44 3.44 0 0 1 2.9-1.76c.91-.02 1.77.62 2.33.62.56 0 1.61-.77 2.72-.66.47.02 1.8.19 2.66 1.44-.07.04-1.59.93-1.6 2.75ZM15.26 6.5a3.35 3.35 0 0 0 .76-2.4 3.4 3.4 0 0 0-2.2 1.13 3.17 3.17 0 0 0-.79 2.32 2.82 2.82 0 0 0 2.23-1.05Z" />
+            </svg>
+            Continue with Apple
+          </button>
+        </div>
+        {socialNotice && <p role="status" className="mt-3 rounded-xl bg-sage/15 px-4 py-3 text-center text-sm text-forest">{socialNotice}</p>}
+        <div className="my-5 flex items-center gap-4 text-xs font-semibold uppercase tracking-wider text-charcoal/40">
+          <span className="h-px flex-1 bg-forest/10" />
+          or continue with email
+          <span className="h-px flex-1 bg-forest/10" />
         </div>
 
         <form onSubmit={submit} className="mt-6 grid gap-5 rounded-3xl bg-white p-6 shadow-sm">
@@ -984,10 +1010,13 @@ function CheckoutForm({ user }: { user: User }) {
       </div>
 
       {/* Mobile sticky pay bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-4 border-t border-forest/10 bg-ivory px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_24px_rgba(36,74,58,0.08)] lg:hidden">
-        <div><p className="text-xs text-charcoal/55">Total</p><p className="text-lg font-semibold text-forest">{money(total)}</p></div>
-        <button type="submit" form="checkout-form" disabled={stage === "waiting"} className="inline-flex items-center gap-2 rounded-full bg-forest px-6 py-3.5 text-sm font-semibold text-ivory transition hover:bg-forest-light disabled:opacity-50"><Ico name="lock" className="size-4" /> Pay with M-Pesa</button>
-      </div>
+      {createPortal(
+        <div className="fixed inset-x-0 bottom-0 z-[60] flex items-center justify-between gap-4 border-t border-forest/10 bg-ivory px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_24px_rgba(36,74,58,0.08)] lg:hidden">
+          <div><p className="text-xs text-charcoal/55">Total</p><p className="text-lg font-semibold text-forest">{money(total)}</p></div>
+          <button type="submit" form="checkout-form" disabled={stage === "waiting"} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-forest px-6 py-3.5 text-sm font-semibold text-ivory transition hover:bg-forest-light disabled:opacity-50"><Ico name="lock" className="size-4" /> Pay with M-Pesa</button>
+        </div>,
+        document.body,
+      )}
 
       {(stage === "waiting" || stage === "failed") && (
         <div className="fixed inset-0 z-[70] grid place-items-center bg-forest/70 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-live="polite">
