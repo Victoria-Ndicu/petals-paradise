@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { CATALOGUE } from "./catalogue-data";
 
 /* ------------------------------------------------------------------ */
 /*  Data (swap for your API / database later)                          */
@@ -17,33 +18,40 @@ import { createPortal } from "react-dom";
 const img = (id: string, w = 900) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=85`;
 
-export type Category = "Bouquets" | "Roses" | "Gift Sets" | "Wedding";
+export type Category = "Flowers" | "Fruit & gifts";
 
 export type Product = {
   id: string;
   name: string;
   note: string;
+  ingredients: string;
+  palette: string;
   description: string;
   price: number;
+  prices: number[];
+  presentations: string[];
   category: Category;
   image: string;
+  imageAlt: string;
+  occasions: string[];
+  seasonal: boolean;
+  photoBrief: string;
   tag?: string;
   stock: number;
 };
 
-export const PRODUCTS: Product[] = [
-  { id: "blush-romance", name: "Blush Romance", note: "Roses · Baby's breath · Seasonal greens", description: "A soft, romantic hand-tied bouquet of blush roses and baby's breath, wrapped in our signature paper and tied with satin ribbon.", price: 4500, category: "Bouquets", image: img("photo-1523693916903-027d144a2b7d"), tag: "Bestseller", stock: 12 },
-  { id: "paradise-rose", name: "Paradise Rose", note: "Premium pink roses · Gift wrapped", description: "Two dozen premium pink roses, hand-selected for fullness and fragrance and gift wrapped by our florists.", price: 5800, category: "Roses", image: img("photo-1644248423203-80e317d78aee"), tag: "Signature", stock: 8 },
-  { id: "garden-poetry", name: "Garden Poetry", note: "Mixed seasonal blooms · Soft pastels", description: "A loose, garden-style arrangement of the freshest seasonal blooms in a pastel palette.", price: 4200, category: "Bouquets", image: img("photo-1567418938902-aa650a3eb346"), tag: "Seasonal", stock: 10 },
-  { id: "ivory-grace", name: "Ivory Grace", note: "White blooms · Eucalyptus · Keepsake vase", description: "Elegant white blooms with eucalyptus, presented in a keepsake vase that lasts long after the flowers.", price: 5200, category: "Gift Sets", image: img("photo-1674758445398-c2989470fa8a"), tag: "New", stock: 6 },
-  { id: "rose-reverie", name: "Rose Reverie", note: "Pink roses · Custom message card", description: "A classic pink rose bouquet finished with a handwritten message card of your choice.", price: 3900, category: "Roses", image: img("photo-1612526031467-2b6bf1f49961"), tag: "Classic", stock: 15 },
-  { id: "forever-yours", name: "Forever Yours", note: "Deluxe rose bouquet · Satin wrap", description: "Our most generous rose bouquet, wrapped in satin and made for the moments that matter most.", price: 6500, category: "Roses", image: img("photo-1644248423203-80e317d78aee"), tag: "Deluxe", stock: 5 },
-  { id: "bridal-bouquet", name: "Bridal Bouquet", note: "Custom designed · Made to order", description: "A bespoke bridal bouquet designed around your dress, palette and venue. Our team will confirm details with you on WhatsApp.", price: 12000, category: "Wedding", image: img("photo-1639986098217-17112e22f1ed"), tag: "Made to order", stock: 4 },
-  { id: "table-florals", name: "Table Centrepiece", note: "Modern low arrangement · Per table", description: "A modern low centrepiece for dinners and receptions, priced per table. Bulk pricing available on request.", price: 3500, category: "Wedding", image: img("photo-1710587384835-0f3de33d8042"), stock: 20 },
-  { id: "celebration-hamper", name: "Celebration Hamper", note: "Blooms · Chocolates · Card", description: "A thoughtful gift set with a fresh bouquet, premium chocolates and a handwritten card.", price: 7200, category: "Gift Sets", image: img("photo-1525441273400-056e9c7517b3"), tag: "Gift", stock: 7 },
-];
+const flowerImages = ["photo-1523693916903-027d144a2b7d", "photo-1644248423203-80e317d78aee", "photo-1567418938902-aa650a3eb346", "photo-1674758445398-c2989470fa8a"];
 
-const CATEGORIES: ("All" | Category)[] = ["All", "Bouquets", "Roses", "Gift Sets", "Wedding"];
+export const PRODUCTS: Product[] = CATALOGUE.map((product, index) => ({
+  ...product,
+  note: product.ingredients,
+  price: product.prices[0],
+  image: img(product.category === "Flowers" ? flowerImages[index % flowerImages.length] : "photo-1610832958506-aa56368176cf"),
+  tag: product.seasonal ? "Seasonal" : undefined,
+  stock: 99,
+}));
+
+const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts"];
 
 /** Placeholder delivery fees: edit to match your real zones. */
 export const DELIVERY_AREAS = [
@@ -195,15 +203,16 @@ export function useAuth() {
 /*  Cart + provider                                                    */
 /* ------------------------------------------------------------------ */
 
-type CartLine = { id: string; qty: number };
+type CartLine = { key: string; id: string; qty: number; price: number; sizeIndex: number; presentation: string };
+type CartVariant = { price: number; sizeIndex: number; presentation: string };
 
 type CartCtx = {
   lines: (CartLine & { product: Product })[];
   count: number;
   subtotal: number;
-  add: (id: string, qty?: number) => void;
-  setQty: (id: string, qty: number) => void;
-  remove: (id: string) => void;
+  add: (id: string, qty?: number, variant?: CartVariant) => void;
+  setQty: (key: string, qty: number) => void;
+  remove: (key: string) => void;
   clear: () => void;
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
@@ -222,7 +231,23 @@ export function useCart() {
 
 export function ShopProvider({ children }: { children: ReactNode }) {
   /* cart */
-  const [raw, setRaw] = useState<CartLine[]>(() => read<CartLine[]>(CART_KEY, []));
+  const [raw, setRaw] = useState<CartLine[]>(() => {
+    const saved = read<Array<Partial<CartLine> & Pick<CartLine, "id" | "qty">>>(CART_KEY, []);
+    return saved.flatMap((line) => {
+      const product = PRODUCTS.find((item) => item.id === line.id);
+      if (!product) return [];
+      const sizeIndex = line.sizeIndex ?? 0;
+      const presentation = line.presentation ?? product.presentations[0];
+      return [{
+        key: line.key ?? `${line.id}:${sizeIndex}:${presentation}`,
+        id: line.id,
+        qty: line.qty,
+        price: line.price ?? product.prices[sizeIndex] ?? product.price,
+        sizeIndex,
+        presentation,
+      }];
+    });
+  });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -241,28 +266,32 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const add = useCallback((id: string, qty = 1) => {
+  const add = useCallback((id: string, qty = 1, variant?: CartVariant) => {
     const product = PRODUCTS.find((p) => p.id === id);
     const stock = product?.stock ?? 99;
+    const selected = variant ?? { price: product?.prices[0] ?? 0, sizeIndex: 0, presentation: product?.presentations[0] ?? "" };
+    const key = `${id}:${selected.sizeIndex}:${selected.presentation}`;
     setRaw((cur) => {
-      const found = cur.find((l) => l.id === id);
-      if (found) return cur.map((l) => (l.id === id ? { ...l, qty: Math.min(stock, l.qty + qty) } : l));
-      return [...cur, { id, qty: Math.min(stock, qty) }];
+      const found = cur.find((line) => line.key === key);
+      if (found) return cur.map((line) => (line.key === key ? { ...line, qty: Math.min(stock, line.qty + qty) } : line));
+      return [...cur, { key, id, qty: Math.min(stock, qty), ...selected }];
     });
     setToast(`${product?.name ?? "Item"} added to cart`);
   }, []);
 
-  const setQty = useCallback((id: string, qty: number) => {
-    const stock = PRODUCTS.find((p) => p.id === id)?.stock ?? 99;
+  const setQty = useCallback((key: string, qty: number) => {
     setRaw((cur) =>
-      qty <= 0 ? cur.filter((l) => l.id !== id) : cur.map((l) => (l.id === id ? { ...l, qty: Math.min(stock, qty) } : l)),
+      qty <= 0 ? cur.filter((line) => line.key !== key) : cur.map((line) => (line.key === key ? { ...line, qty: Math.min(PRODUCTS.find((product) => product.id === line.id)?.stock ?? 99, qty) } : line)),
     );
   }, []);
-  const remove = useCallback((id: string) => setRaw((cur) => cur.filter((l) => l.id !== id)), []);
+  const remove = useCallback((key: string) => setRaw((cur) => cur.filter((line) => line.key !== key)), []);
   const clear = useCallback(() => setRaw([]), []);
 
   const cart = useMemo<CartCtx>(() => {
-    const lines = raw.map((l) => ({ ...l, product: PRODUCTS.find((p) => p.id === l.id)! })).filter((l) => l.product);
+    const lines = raw.flatMap((line) => {
+      const product = PRODUCTS.find((item) => item.id === line.id);
+      return product ? [{ ...line, product: { ...product, price: line.price } }] : [];
+    });
     return {
       lines,
       count: lines.reduce((s, l) => s + l.qty, 0),
@@ -451,17 +480,17 @@ export function CartDrawer() {
             ) : (
               <>
                 <ul className="flex-1 divide-y divide-forest/10 overflow-y-auto px-5 sm:px-6">
-                  {lines.map(({ product, qty }) => (
-                    <li key={product.id} className="flex gap-4 py-5">
-                      <img src={product.image} alt={product.name} className="size-20 shrink-0 object-cover sm:size-24" />
+                  {lines.map(({ product, qty, key, sizeIndex, presentation }) => (
+                    <li key={key} className="flex gap-4 py-5">
+                      <img src={product.image} alt={product.imageAlt} className="size-20 shrink-0 object-cover sm:size-24" />
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="font-serif text-xl leading-tight text-forest">{product.name}</h3>
-                          <button aria-label={`Remove ${product.name}`} onClick={() => remove(product.id)} className="grid size-8 shrink-0 place-items-center text-charcoal/40 transition hover:text-rose"><Ico name="trash" className="size-4" /></button>
+                          <button aria-label={`Remove ${product.name}`} onClick={() => remove(key)} className="grid size-8 shrink-0 place-items-center text-charcoal/40 transition hover:text-rose"><Ico name="trash" className="size-4" /></button>
                         </div>
-                        <p className="mt-0.5 text-xs text-charcoal/50">{money(product.price)} each</p>
+                        <p className="mt-0.5 text-xs text-charcoal/50">Size {sizeIndex + 1} · {presentation === "giftbasket" ? "Gift basket" : presentation} · {money(product.price)} each</p>
                         <div className="mt-auto flex items-center justify-between pt-3">
-                          <QtyStepper qty={qty} max={product.stock} onChange={(q) => setQty(product.id, q)} />
+                          <QtyStepper qty={qty} max={product.stock} onChange={(q) => setQty(key, q)} />
                           <p className="font-semibold text-forest">{money(qty * product.price)}</p>
                         </div>
                       </div>
@@ -488,12 +517,11 @@ export function CartDrawer() {
 /* ------------------------------------------------------------------ */
 
 function ShopCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
-  const { add } = useCart();
   const soldOut = product.stock === 0;
   return (
     <article className="group">
       <button onClick={onOpen} className="relative block aspect-[4/5] w-full overflow-hidden bg-blush/30 text-left" aria-label={`View ${product.name}`}>
-        <img src={product.image} alt={`${product.name} flower arrangement`} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+        <img src={product.image} alt={product.imageAlt} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
         {product.tag && <span className="absolute left-3 top-3 rounded-full bg-ivory/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-forest backdrop-blur sm:left-4 sm:top-4">{product.tag}</span>}
         {product.stock > 0 && product.stock <= 5 && <span className="absolute bottom-3 left-3 rounded-full bg-rose px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ivory sm:bottom-4 sm:left-4">Only {product.stock} left</span>}
       </button>
@@ -503,10 +531,10 @@ function ShopCard({ product, onOpen }: { product: Product; onOpen: () => void })
             <h3 className="font-serif text-2xl text-forest">{product.name}</h3>
             <p className="mt-1 text-sm text-charcoal/55">{product.note}</p>
           </div>
-          <p className="shrink-0 font-semibold text-forest">{money(product.price)}</p>
+          <p className="shrink-0 font-semibold text-forest">From {money(product.price)}</p>
         </div>
-        <Btn disabled={soldOut} onClick={() => add(product.id)} className="mt-4 w-full !py-3">
-          {soldOut ? "Sold out" : <>Add to cart <Ico name="bag" className="size-4" /></>}
+        <Btn disabled={soldOut} onClick={onOpen} className="mt-4 w-full !py-3">
+          {soldOut ? "Sold out" : <>Choose options <Ico name="bag" className="size-4" /></>}
         </Btn>
       </div>
     </article>
@@ -516,6 +544,9 @@ function ShopCard({ product, onOpen }: { product: Product; onOpen: () => void })
 function ProductModal({ product, onClose }: { product: Product; onClose: () => void }) {
   const { add } = useCart();
   const [qty, setQty] = useState(1);
+  const [sizeIndex, setSizeIndex] = useState(0);
+  const [presentation, setPresentation] = useState(product.presentations[0]);
+  const price = product.prices[sizeIndex];
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -532,21 +563,34 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
       <div className="absolute inset-0 bg-forest/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative grid max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-3xl bg-ivory sm:rounded-3xl md:grid-cols-2">
         <button aria-label="Close" onClick={onClose} className="absolute right-4 top-4 z-10 grid size-10 place-items-center rounded-full bg-ivory/90 text-forest"><Ico name="close" className="size-4" /></button>
-        <img src={product.image} alt={product.name} className="h-64 w-full object-cover md:h-full md:min-h-[32rem]" />
+        <img src={product.image} alt={product.imageAlt} className="h-64 w-full object-cover md:h-full md:min-h-[32rem]" />
         <div className="flex flex-col p-6 sm:p-10">
           <p className="eyebrow">{product.category}</p>
           <h2 className="mt-3 font-serif text-4xl leading-none text-forest sm:text-5xl">{product.name}</h2>
-          <p className="mt-4 text-2xl font-semibold text-forest">{money(product.price)}</p>
+          <p className="mt-4 text-2xl font-semibold text-forest">{money(price)}</p>
           <p className="mt-4 leading-7 text-charcoal/65">{product.description}</p>
-          <p className="mt-3 text-sm text-charcoal/50">{product.note}</p>
+          <p className="mt-3 text-sm text-charcoal/50">{product.ingredients} · {product.palette}</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <label className="field"><span>Size</span>
+              <select value={sizeIndex} onChange={(event) => setSizeIndex(Number(event.target.value))}>
+                {product.prices.map((tierPrice, index) => <option key={index} value={index}>Size {index + 1} · {money(tierPrice)}</option>)}
+              </select>
+            </label>
+            <label className="field"><span>Presentation</span>
+              <select value={presentation} onChange={(event) => setPresentation(event.target.value)}>
+                {product.presentations.map((option) => <option key={option} value={option}>{option === "giftbasket" ? "Gift basket" : option.charAt(0).toUpperCase() + option.slice(1)}</option>)}
+              </select>
+            </label>
+          </div>
+          <p className="mt-3 text-xs text-charcoal/50">Occasions: {product.occasions.join(", ")}</p>
           <ul className="mt-5 space-y-2 text-sm text-charcoal/65">
             <li className="flex items-center gap-2"><Ico name="truck" className="size-4 shrink-0 text-gold" /> Same-day Nairobi delivery</li>
             <li className="flex items-center gap-2"><Ico name="lock" className="size-4 shrink-0 text-gold" /> Secure payment with M-Pesa</li>
           </ul>
           <div className="mt-auto flex items-center gap-3 pt-7">
             <QtyStepper qty={qty} max={product.stock} onChange={(q) => setQty(Math.max(1, q))} />
-            <Btn disabled={product.stock === 0} onClick={() => { add(product.id, qty); onClose(); }} className="flex-1 !px-4">
-              Add · {money(product.price * qty)}
+            <Btn disabled={product.stock === 0} onClick={() => { add(product.id, qty, { price, sizeIndex, presentation }); onClose(); }} className="flex-1 !px-4">
+              Add · {money(price * qty)}
             </Btn>
           </div>
         </div>
@@ -563,7 +607,7 @@ export function ShopPage() {
 
   const visible = useMemo(() => {
     let list = PRODUCTS.filter(
-      (p) => (category === "All" || p.category === category) && `${p.name} ${p.note}`.toLowerCase().includes(query.toLowerCase()),
+      (p) => (category === "All" || p.category === category) && `${p.name} ${p.note} ${p.occasions.join(" ")}`.toLowerCase().includes(query.toLowerCase()),
     );
     if (sort === "low") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "high") list = [...list].sort((a, b) => b.price - a.price);
@@ -576,7 +620,7 @@ export function ShopPage() {
       <section className="border-b border-forest/10 bg-blush/20 py-7 sm:py-9">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <p className="eyebrow">Petals Paradise shop</p>
-          <h1 className="mt-2 font-serif text-4xl leading-none text-forest sm:text-5xl">Shop flowers</h1>
+          <h1 className="mt-2 font-serif text-4xl leading-none text-forest sm:text-5xl">Shop flowers & gifts</h1>
         </div>
       </section>
 
@@ -879,7 +923,7 @@ function CheckoutForm({ user }: { user: User }) {
         const order: Order = {
           ref, receipt: res.receipt, userId: user.id, date: new Date().toISOString(), total,
           delivery: `${form.date} · ${form.slot}`,
-          items: lines.map((l) => ({ name: l.product.name, qty: l.qty, price: l.product.price })),
+          items: lines.map((line) => ({ name: `${line.product.name} · Size ${line.sizeIndex + 1} · ${line.presentation}`, qty: line.qty, price: line.product.price })),
         };
         write(ORDERS_KEY, [order, ...read<Order[]>(ORDERS_KEY, [])]);
         setReceipt(res.receipt);
@@ -994,14 +1038,15 @@ function CheckoutForm({ user }: { user: User }) {
           <aside className="h-fit rounded-3xl bg-ivory p-5 shadow-sm ring-1 ring-forest/10 sm:p-8 lg:sticky lg:top-28">
             <h2 className="font-serif text-3xl text-forest">Order summary</h2>
             <ul className="mt-4 divide-y divide-forest/10">
-              {lines.map(({ product, qty }) => (
-                <li key={product.id} className="flex gap-4 py-4">
-                  <img src={product.image} alt={product.name} className="size-16 shrink-0 object-cover" />
+              {lines.map(({ product, qty, key, sizeIndex, presentation }) => (
+                <li key={key} className="flex gap-4 py-4">
+                  <img src={product.image} alt={product.imageAlt} className="size-16 shrink-0 object-cover" />
                   <div className="min-w-0 flex-1">
                     <p className="font-serif text-lg leading-tight text-forest">{product.name}</p>
+                    <p className="mt-1 text-xs text-charcoal/50">Size {sizeIndex + 1} · {presentation === "giftbasket" ? "Gift basket" : presentation}</p>
                     <div className="mt-2 flex items-center gap-3 text-xs text-charcoal/55">
-                      <QtyStepper qty={qty} max={product.stock} onChange={(q) => setQty(product.id, q)} />
-                      <button type="button" onClick={() => remove(product.id)} className="py-2 underline transition hover:text-rose">Remove</button>
+                      <QtyStepper qty={qty} max={product.stock} onChange={(q) => setQty(key, q)} />
+                      <button type="button" onClick={() => remove(key)} className="py-2 underline transition hover:text-rose">Remove</button>
                     </div>
                   </div>
                   <p className="text-sm font-semibold text-forest">{money(qty * product.price)}</p>

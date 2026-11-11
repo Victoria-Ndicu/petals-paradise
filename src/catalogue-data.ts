@@ -1,0 +1,74 @@
+export type CatalogueProduct = {
+  id: string;
+  name: string;
+  ingredients: string;
+  palette: string;
+  description: string;
+  prices: number[];
+  occasions: string[];
+  presentations: string[];
+  category: "Flowers" | "Fruit & gifts";
+  seasonal: boolean;
+  image: null;
+  imageAlt: string;
+  photoBrief: string;
+};
+
+type FlowerInput = Omit<CatalogueProduct, "category" | "image" | "imageAlt" | "photoBrief">;
+type FruitInput = Omit<FlowerInput, "palette">;
+
+const flower = (product: FlowerInput): CatalogueProduct => ({
+  ...product,
+  category: "Flowers",
+  image: null,
+  imageAlt: `${product.name}: ${product.ingredients}; photograph must show selected presentation`,
+  photoBrief: `Photograph ${product.ingredients} in ${product.palette.toLowerCase()} tones, neutral studio background, accurate stem proportions. Show the complete selected vessel and natural petal texture. Separate image required per presentation.`,
+});
+
+const fruit = (product: FruitInput): CatalogueProduct => ({
+  ...product,
+  palette: "Natural fruit colours",
+  category: "Fruit & gifts",
+  image: null,
+  imageAlt: product.name,
+  photoBrief: `Photograph an actual woven basket containing ${product.ingredients}; show complete basket. Keep any flower water container separate from edible fruit.`,
+});
+
+export const CATALOGUE: CatalogueProduct[] = [
+  flower({ id: "fl-001", name: "Blush Romance", ingredients: "Pink roses, baby’s breath, eucalyptus", palette: "Blush pink", description: "Soft pink roses gathered into an airy, romantic silhouette.", prices: [2500, 3800, 5500, 7500], occasions: ["Anniversaries", "Valentine’s Day", "Birthdays"], presentations: ["hand", "kraft", "paper", "glass", "hatbox"], seasonal: false }),
+  flower({ id: "fl-002", name: "Classic Elegance", ingredients: "Red roses, white roses, eucalyptus", palette: "Red and white", description: "A tailored contrast of crimson and ivory with silvery foliage.", prices: [2800, 4200, 6000, 8500], occasions: ["Anniversaries", "Valentine’s Day", "Corporate gifting"], presentations: ["hand", "paper", "luxury", "glass"], seasonal: false }),
+  flower({ id: "fl-003", name: "Sunshine Fields", ingredients: "Sunflowers, yellow roses, solidago", palette: "Yellow", description: "Golden sunflower faces framed by roses and feathery golden fillers.", prices: [2600, 3900, 5600, 7800], occasions: ["Birthdays", "Congratulations", "Just Because"], presentations: ["hand", "kraft", "paper", "basket"], seasonal: false }),
+  flower({ id: "fl-004", name: "Pure Serenity", ingredients: "White lilies, white roses, baby’s breath", palette: "White", description: "A quiet, sculptural composition of lilies and cloudlike accents.", prices: [3500, 5000, 7200, 9800], occasions: ["Sympathy and funerals", "Weddings"], presentations: ["hand", "paper", "glass", "ceramic"], seasonal: false }),
+  flower({ id: "fl-005", name: "Garden Whispers", ingredients: "Pink lisianthus, white daisies, peach carnations, ruscus", palette: "Pastel mix", description: "A loose garden gathering with delicate petals and an informal outline.", prices: [2800, 4200, 5900, 8200], occasions: ["Birthdays", "Mother’s Day", "Just Because"], presentations: ["hand", "kraft", "jar", "basket"], seasonal: true }),
+  flower({ id: "fl-006", name: "Lavender Reverie", ingredients: "Lavender-toned roses, purple lisianthus, statice", palette: "Lilac", description: "Layered mauve petals and papery purple accents for a dreamy finish.", prices: [3800, 5500, 7800, 10500], occasions: ["Anniversaries", "Birthdays"], presentations: ["hand", "paper", "luxury", "glass"], seasonal: true }),
+  flower({ id: "fl-007", name: "Tropical Atelier", ingredients: "Orchids, birds of paradise, monstera leaves", palette: "Tropical mix", description: "Architectural blooms and broad foliage in a striking asymmetric display.", prices: [5500, 8000, 11500, 16000], occasions: ["Corporate gifting", "Congratulations"], presentations: ["glass", "ceramic", "statement"], seasonal: true }),
+  flower({ id: "fl-008", name: "The Wildflower Edit", ingredients: "Gerberas, chrysanthemums, daisies, limonium", palette: "Colourful mix", description: "An exuberant meadow-inspired bunch with a playful, open shape.", prices: [2200, 3400, 4900, 6800], occasions: ["Just Because", "Birthdays"], presentations: ["hand", "kraft", "jar", "basket"], seasonal: false }),
+  flower({ id: "fl-009", name: "Peach Melba", ingredients: "Peach roses, apricot carnations, cream lisianthus", palette: "Peach", description: "Warm sorbet shades gathered into a soft, rounded bouquet.", prices: [3000, 4500, 6500, 9000], occasions: ["Mother’s Day", "Birthdays", "Weddings"], presentations: ["hand", "paper", "glass", "hatbox"], seasonal: true }),
+  flower({ id: "fl-010", name: "Tulip Poetry", ingredients: "Pink tulips, white tulips", palette: "Pink and white", description: "A clean tulip-only arrangement with naturally curving stems.", prices: [4500, 6500, 9000, 12500], occasions: ["Birthdays", "Anniversaries", "Mother’s Day"], presentations: ["hand", "paper", "glass"], seasonal: true }),
+  flower({ id: "fl-011", name: "Crimson Chapter", ingredients: "Red roses, red spray roses, ruscus", palette: "Red", description: "Rich red layers create a dense, classic declaration of affection.", prices: [3000, 4500, 6800, 10000], occasions: ["Valentine’s Day", "Anniversaries"], presentations: ["hand", "luxury", "hatbox", "glass"], seasonal: false }),
+  flower({ id: "fl-012", name: "Cloud Nine", ingredients: "White hydrangeas, white lisianthus, eucalyptus", palette: "White", description: "Generous cloudlike flower heads with a fresh, airy finish.", prices: [4500, 6500, 9000, 12500], occasions: ["Weddings", "Congratulations", "Corporate gifting"], presentations: ["glass", "ceramic", "hatbox"], seasonal: true }),
+  flower({ id: "fl-013", name: "Coral Celebration", ingredients: "Coral gerberas, orange roses, yellow chrysanthemums", palette: "Orange and yellow", description: "Bright daisylike faces and warm roses bring cheerful energy.", prices: [2600, 3900, 5600, 7800], occasions: ["Birthdays", "Congratulations"], presentations: ["hand", "kraft", "paper", "basket"], seasonal: false }),
+  flower({ id: "fl-014", name: "Orchid Nocturne", ingredients: "Purple dendrobium orchids, white orchids, tropical foliage", palette: "Purple and white", description: "Slender orchid sprays arranged with deliberate negative space.", prices: [5000, 7200, 10000, 14000], occasions: ["Corporate gifting", "Anniversaries"], presentations: ["glass", "ceramic", "statement"], seasonal: true }),
+  flower({ id: "fl-015", name: "Mother’s Garden", ingredients: "Pink carnations, peach roses, white alstroemeria", palette: "Pink and peach", description: "Ruffled carnations and branching blooms make a generous garden gift.", prices: [2800, 4200, 6000, 8400], occasions: ["Mother’s Day", "Birthdays"], presentations: ["hand", "paper", "jar", "basket"], seasonal: false }),
+  flower({ id: "fl-016", name: "Ivory Promise", ingredients: "White roses, white lisianthus, olive-toned greenery", palette: "Ivory", description: "Refined ivory blooms with a flowing, understated garden shape.", prices: [3500, 5200, 7400, 10200], occasions: ["Weddings", "Anniversaries", "Sympathy and funerals"], presentations: ["hand", "paper", "glass", "ceramic"], seasonal: true }),
+  flower({ id: "fl-017", name: "Berry Velvet", ingredients: "Burgundy carnations, deep pink roses, purple chrysanthemums", palette: "Berry", description: "Velvety wine tones and ruffled textures create a dramatic rounded gift.", prices: [3200, 4700, 6700, 9400], occasions: ["Anniversaries", "Birthdays"], presentations: ["hand", "luxury", "hatbox"], seasonal: false }),
+  flower({ id: "fl-018", name: "Lemon & Linen", ingredients: "Yellow tulips, white lisianthus, eucalyptus", palette: "Yellow and white", description: "Fresh lemon tones meet delicate white petals in a relaxed silhouette.", prices: [4500, 6500, 9000, 12500], occasions: ["Congratulations", "Mother’s Day", "Just Because"], presentations: ["hand", "paper", "glass"], seasonal: true }),
+  flower({ id: "fl-019", name: "Blue Hour", ingredients: "Blue hydrangeas, white roses, white statice", palette: "Blue and white", description: "Cool blue clouds framed by crisp white blooms.", prices: [4500, 6600, 9200, 12800], occasions: ["Corporate gifting", "Birthdays", "Congratulations"], presentations: ["glass", "ceramic", "hatbox"], seasonal: true }),
+  flower({ id: "fl-020", name: "Daisy Sunday", ingredients: "White daisies, yellow button chrysanthemums, chamomile-style seasonal fillers", palette: "White and yellow", description: "A lighthearted, meadow-inspired bunch with tiny golden centres.", prices: [2200, 3300, 4700, 6500], occasions: ["Just Because", "Birthdays"], presentations: ["hand", "kraft", "jar"], seasonal: false }),
+  flower({ id: "fl-021", name: "Lily & Light", ingredients: "Pink lilies, cream roses, eucalyptus", palette: "Pink and cream", description: "Star-shaped lilies rise above a soft base of cream roses.", prices: [3800, 5500, 7800, 10800], occasions: ["Mother’s Day", "Anniversaries", "Birthdays"], presentations: ["hand", "paper", "glass", "ceramic"], seasonal: false }),
+  flower({ id: "fl-022", name: "Sunset Boulevard", ingredients: "Orange lilies, peach roses, burgundy chrysanthemums", palette: "Sunset mix", description: "A bold sunset palette with expressive lilies and richly coloured accents.", prices: [3600, 5200, 7400, 10200], occasions: ["Congratulations", "Birthdays"], presentations: ["hand", "luxury", "glass", "basket"], seasonal: false }),
+  flower({ id: "fl-023", name: "Carnation Couture", ingredients: "Pink carnations, white carnations, burgundy carnations", palette: "Pink and burgundy", description: "A fashion-inspired mass of ruffled petals in graduated tones.", prices: [2300, 3500, 5000, 7000], occasions: ["Mother’s Day", "Birthdays", "Just Because"], presentations: ["hand", "paper", "hatbox"], seasonal: false }),
+  flower({ id: "fl-024", name: "Emerald Pause", ingredients: "Green chrysanthemums, white orchids, aspidistra leaves", palette: "Green and white", description: "A restrained architectural arrangement with clean lines and glossy foliage.", prices: [4500, 6500, 9200, 12800], occasions: ["Corporate gifting", "Congratulations"], presentations: ["glass", "ceramic", "statement"], seasonal: true }),
+  flower({ id: "fl-025", name: "Petal Confetti", ingredients: "Pink gerberas, yellow gerberas, orange gerberas, purple statice", palette: "Colourful mix", description: "Bright, open-faced blooms make a joyful colour-blocked gift.", prices: [2400, 3600, 5200, 7200], occasions: ["Birthdays", "Congratulations", "Just Because"], presentations: ["hand", "kraft", "paper", "basket"], seasonal: false }),
+  flower({ id: "fl-026", name: "Rosewater Jar", ingredients: "Pink spray roses, white alstroemeria, baby’s breath", palette: "Blush and white", description: "A delicate cottage-style posy designed for small spaces.", prices: [2400, 3600, 5100, 7100], occasions: ["Just Because", "Mother’s Day"], presentations: ["jar", "glass", "hand"], seasonal: false }),
+  flower({ id: "fl-027", name: "Quiet Remembrance", ingredients: "White chrysanthemums, white carnations, palm foliage", palette: "White and green", description: "A composed tribute with soft white flowers and a graceful outline.", prices: [2800, 4200, 6000, 8500], occasions: ["Sympathy and funerals"], presentations: ["hand", "basket", "ceramic"], seasonal: false }),
+  flower({ id: "fl-028", name: "Grand Affection", ingredients: "Red roses, pink hydrangeas, pink lilies", palette: "Red and pink", description: "An abundant statement of roses, cloudlike hydrangeas and sweeping lilies.", prices: [5500, 8000, 11500, 16000], occasions: ["Valentine’s Day", "Anniversaries"], presentations: ["luxury", "hatbox", "statement"], seasonal: true }),
+  flower({ id: "fl-029", name: "Apricot Orchard", ingredients: "Peach roses, white daisies, yellow alstroemeria", palette: "Peach and yellow", description: "A warm, fresh-from-the-garden arrangement with delicate branching flowers.", prices: [2800, 4200, 6000, 8300], occasions: ["Birthdays", "Mother’s Day", "Just Because"], presentations: ["hand", "kraft", "jar", "basket"], seasonal: false }),
+  flower({ id: "fl-030", name: "Botanical Signature", ingredients: "White orchids, green hydrangeas, white roses, monstera leaves", palette: "Green and ivory", description: "A generous modern composition balancing rounded blooms and sculptural foliage.", prices: [6000, 8500, 12000, 17000], occasions: ["Corporate gifting", "Weddings", "Congratulations"], presentations: ["ceramic", "glass", "statement"], seasonal: true }),
+  fruit({ id: "fr-001", name: "Orchard Essentials", ingredients: "Apples, oranges, bananas, grapes", description: "A colourful everyday fruit gift in a natural woven basket.", prices: [2500, 3500, 4800, 6500], occasions: ["Birthdays", "Congratulations", "Corporate gifting", "Just Because"], presentations: ["basket", "giftbasket"], seasonal: true }),
+  fruit({ id: "fr-002", name: "Tropical Harvest", ingredients: "Pineapple, mangoes, oranges, passion fruit", description: "A sunny assortment inspired by tropical fruit stalls.", prices: [3200, 4500, 6200, 8500], occasions: ["Birthdays", "Congratulations", "Corporate gifting", "Just Because"], presentations: ["basket", "giftbasket"], seasonal: true }),
+  fruit({ id: "fr-003", name: "Ruby Orchard", ingredients: "Red apples, red grapes, plums, oranges", description: "Deep jewel tones in a neatly layered gifting basket.", prices: [3500, 4800, 6600, 9000], occasions: ["Birthdays", "Congratulations", "Corporate gifting", "Just Because"], presentations: ["basket", "giftbasket"], seasonal: true }),
+  fruit({ id: "fr-004", name: "Boardroom Harvest", ingredients: "Apples, pears, oranges, grapes, bananas", description: "A generous shareable fruit selection for workplace gifting.", prices: [4000, 5500, 7500, 10000], occasions: ["Birthdays", "Congratulations", "Corporate gifting", "Just Because"], presentations: ["basket", "giftbasket"], seasonal: true }),
+  fruit({ id: "fr-005", name: "Fruit & Blush", ingredients: "Apples, oranges, grapes; pink roses, white carnations", description: "Fresh fruit paired with a separately contained floral posy.", prices: [5000, 6500, 8500, 11500], occasions: ["Birthdays", "Congratulations", "Corporate gifting", "Just Because"], presentations: ["basket", "giftbasket"], seasonal: true }),
+  fruit({ id: "fr-006", name: "Sunshine & Citrus", ingredients: "Oranges, apples, pineapple; sunflowers, yellow roses", description: "A golden fruit-and-flower gift with joyful, generous colour.", prices: [5200, 7000, 9500, 12500], occasions: ["Birthdays", "Congratulations", "Corporate gifting", "Just Because"], presentations: ["basket", "giftbasket"], seasonal: true }),
+];
