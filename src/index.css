@@ -52,6 +52,27 @@ button, a, select { cursor: pointer; }
   line-height: 1;
 }
 
+.partners-marquee {
+  overflow: hidden;
+}
+.partners-track {
+  display: flex;
+  width: max-content;
+  animation: partners-scroll 42s linear infinite;
+}
+.partners-group {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.partners-marquee:hover .partners-track,
+.partners-marquee:focus-within .partners-track {
+  animation-play-state: paused;
+}
+@keyframes partners-scroll {
+  to { transform: translateX(-50%); }
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -92,4 +113,10 @@ img:hover {
 
 @media (max-width: 639px) {
   .section-title { font-size: 2.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partners-marquee { overflow-x: auto; }
+  .partners-track { animation: none; }
+  .partners-group[aria-hidden="true"] { display: none; }
 }

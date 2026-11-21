@@ -9,6 +9,8 @@ const images = {
   white: "https://images.unsplash.com/photo-1674758445398-c2989470fa8a?auto=format&fit=crop&w=900&q=85",
   event: "https://images.unsplash.com/photo-1525441273400-056e9c7517b3?auto=format&fit=crop&w=1200&q=85",
   eventDetail: "https://images.unsplash.com/photo-1710587384835-0f3de33d8042?auto=format&fit=crop&w=1000&q=85",
+  babyShower: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzNn9juTGn3W4a8GecbwYw0x0KeRGhRVMMW9wB_Uq4ow&s=10",
+  birthday: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1000&q=85",
   florist: "https://images.unsplash.com/photo-1642751652611-bb9a7cad58a3?auto=format&fit=crop&w=1000&q=85",
   arch: "https://images.unsplash.com/photo-1639986098217-17112e22f1ed?auto=format&fit=crop&w=1000&q=85",
   funeralHeart: "https://images.openai.com/static-rsc-4/M99-2HruL0F7k_uz67sfAH09su4rsIJmqKQFpGhMmU5GR9NIPDdU6MfzfsySOxljqM2o_JVnIm1FCc0QMBlbef9e5Qd6eqam126sOwX1ehgNDC3sKLxuwyfsP6Cw1j8QaIdwiGItb-nmug0T65TwlWw3X8Yj_JQPDwiSt_6xHDY?purpose=inline",
@@ -28,9 +30,11 @@ const serviceDetails = {
   "events-decor": {
     eyebrow: "Bespoke design",
     title: "Events & décor",
-    intro: "Personal floral styling for weddings, intimate celebrations and gatherings, designed around your setting and story.",
+    intro: "Personal floral styling for weddings, baby showers, birthday parties, intimate celebrations and gatherings, designed around your setting and story.",
     flowers: [
       { title: "Wedding flowers", image: images.arch, description: "Bouquets and floral details made to feel like you." },
+      { title: "Baby shower décor", image: images.babyShower, description: "Soft, joyful florals and decorative touches for a beautiful baby celebration." },
+      { title: "Birthday party décor", image: images.birthday, description: "Playful, personalised styling for milestone birthdays and family celebrations." },
       { title: "Table flowers", image: images.eventDetail, description: "Considered centrepieces for dinners and celebrations." },
       { title: "Venue styling", image: images.event, description: "Floral touches that bring your event space together." },
     ],
@@ -209,20 +213,21 @@ function ServiceDetail({ slug }: { slug: string }) {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [galleryFilter, setGalleryFilter] = useState("All");
   const route = useHashRoute();
   const inShop = isShopRoute(route);
 
-  const nav = ["Shop", "Services", "Our Work", "About", "Contact"];
+  const nav = ["Shop", "Services", "About", "Contact"];
   const navHref = (item: string) => (item === "Shop" ? "#/shop" : `#${item.toLowerCase().replace(" ", "-")}`);
 
-  const gallery = [
-    { image: images.event, category: "Events", title: "Intimate garden celebration" },
-    { image: images.blush, category: "Bouquets", title: "Blush rose collection" },
-    { image: images.arch, category: "Weddings", title: "Romantic floral arch" },
-    { image: images.eventDetail, category: "Events", title: "Modern table florals" },
+  const partners = [
+    { name: "ENZA HOTEL", href: undefined, style: "font-sans font-bold tracking-[0.24em]" },
+    { name: "GLEE HOTEL", href: "https://www.gleehotelnairobi.com/", style: "font-serif font-bold tracking-[0.12em]" },
+    { name: "GEM FOREST HOTEL · MGallery", href: "https://mgallery.accor.com/en/hotels/B5W9.html", style: "font-serif tracking-[0.08em]" },
+    { name: "CAPITAL CLUB", href: "https://capitalclubea.com/", style: "font-sans font-bold tracking-[0.2em]" },
+    { name: "WESTWOOD HOTEL", href: undefined, style: "font-serif font-bold tracking-[0.1em]" },
+    { name: "HADASSAH HOTEL", href: "https://superiorhotelskenya.com/hotels-in-nairobi/hadassah-hotel/", style: "font-sans font-semibold tracking-[0.14em]" },
+    { name: "FAIRMONT MOUNT KENYA SAFARI CLUB", href: "https://www.fairmont.com/en/hotels/nanyuki/fairmont-mount-kenya-safari-club.html", style: "font-serif tracking-[0.06em]" },
   ];
-  const visibleGallery = galleryFilter === "All" ? gallery : gallery.filter((item) => item.category === galleryFilter);
 
   // When leaving the shop for a landing section (e.g. #services), scroll to it once the page has rendered.
   useEffect(() => {
@@ -306,23 +311,13 @@ function App() {
                     </article>
                     <article className="group overflow-hidden rounded-2xl bg-ivory/5 sm:translate-y-8">
                       <div className="h-64 overflow-hidden"><img src={images.event} alt="Elegant event table decorated with flowers" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
-                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">02 · Bespoke design</span><h3 className="mt-3 font-serif text-3xl">Events & décor</h3><p className="mt-3 text-sm leading-6 text-ivory/55">From bridal bouquets to floral arches and tablescapes, we design every detail around your story.</p><a href="#/services/events-decor" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
+                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">02 · Bespoke design</span><h3 className="mt-3 font-serif text-3xl">Events & décor</h3><p className="mt-3 text-sm leading-6 text-ivory/55">From bridal florals to baby showers, birthday parties and tablescapes, we design every detail around your story.</p><a href="#/services/events-decor" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
                     </article>
                     <article className="group overflow-hidden rounded-2xl bg-ivory/5">
                       <div className="h-64 overflow-hidden"><img src={images.funeralHeart} alt="Heart-shaped white funeral flower tribute" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
                       <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">03 · With care</span><h3 className="mt-3 font-serif text-3xl">Funeral & sympathy flowers</h3><p className="mt-3 text-sm leading-6 text-ivory/55">Thoughtful floral tributes to honour a life and offer comfort, with delivery to the service or family home.</p><a href="#/services/funeral-sympathy" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
                     </article>
                   </div>
-                </div>
-              </div>
-            </section>
-
-            <section id="our-work" className="scroll-mt-20 py-24">
-              <div className="mx-auto max-w-7xl px-5 lg:px-8">
-                <div className="text-center"><p className="eyebrow justify-center">Selected work</p><h2 className="section-title">A little floral inspiration</h2></div>
-                <div className="mt-8 flex flex-wrap justify-center gap-2">{["All", "Bouquets", "Weddings", "Events"].map((filter) => <button key={filter} onClick={() => setGalleryFilter(filter)} className={`rounded-full px-5 py-2 text-sm transition ${galleryFilter === filter ? "bg-forest text-ivory" : "bg-sage/20 text-charcoal/60 hover:bg-sage/40"}`}>{filter}</button>)}</div>
-                <div className="mt-10 grid auto-rows-[18rem] gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {visibleGallery.map((item, index) => <article key={item.title} className={`${galleryFilter === "All" && (index === 0 || index === 3) ? "lg:row-span-2" : ""} group relative overflow-hidden rounded-2xl`}><img src={item.image} alt={item.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-forest/80 to-transparent p-5 pt-16 text-ivory"><span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-gold-light">{item.category}</span><h3 className="mt-1 font-serif text-xl">{item.title}</h3></div></article>)}
                 </div>
               </div>
             </section>
@@ -355,6 +350,33 @@ function App() {
                 </form>
               </div>
             </section>
+
+            <section aria-labelledby="partners-title" className="overflow-hidden border-y border-forest/10 bg-white py-16 sm:py-20">
+              <div className="mx-auto max-w-7xl px-5 text-center lg:px-8">
+                <p className="eyebrow justify-center">In good company</p>
+                <h2 id="partners-title" className="section-title">Our partners & clientele</h2>
+                <div className="partners-marquee mt-10" aria-label="Our partners and clients">
+                  <div className="partners-track">
+                    {[0, 1].map((copy) => (
+                      <div key={copy} className="partners-group" aria-hidden={copy === 1}>
+                        {partners.map((partner) => {
+                          const wordmark = <span className={`whitespace-nowrap text-center text-lg text-forest/80 transition-colors group-hover:text-forest sm:text-xl ${partner.style}`}>{partner.name}</span>;
+                          return partner.href ? (
+                            <a key={partner.name} href={partner.href} target="_blank" rel="noreferrer" className="group flex min-h-16 shrink-0 items-center justify-center px-8" aria-label={partner.name}>
+                              {wordmark}
+                            </a>
+                          ) : (
+                            <span key={partner.name} className="flex min-h-16 shrink-0 items-center justify-center px-8">
+                              {wordmark}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
           </>
         )}
       </main>
@@ -362,7 +384,7 @@ function App() {
       <footer className="bg-forest px-5 pb-10 pt-16 text-ivory lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-10 border-b border-ivory/15 pb-12 md:grid-cols-[1.4fr_0.8fr_0.8fr_1fr]">
           <div><a href="#" className="flex items-center gap-3 font-serif text-2xl"><LogoMark /> PETALS PARADISE</a><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/50">Thoughtful flowers for everyday moments, meaningful celebrations and unforgettable events.</p><a href="#" aria-label="Instagram" className="mt-5 grid size-10 place-items-center rounded-full border border-ivory/20"><Icon name="instagram" className="size-4" /></a></div>
-          <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Explore</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#/shop">Shop flowers</a><a href="#services">Services</a><a href="#our-work">Our work</a><a href="#about">Our story</a></div></div>
+          <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Explore</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#/shop">Shop flowers</a><a href="#services">Services</a><a href="#about">Our story</a></div></div>
           <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Order</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#contact">Request a quote</a><a href="https://wa.me/254728829124">WhatsApp us</a><a href="tel:+254728829124">Call us</a><a href="#/shop">Delivery info</a></div></div>
           <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Visit our studio</h3><p className="mt-5 text-sm leading-6 text-ivory/60">359 Jalaram Road, Westlands, Nairobi<br />Monday – Sunday<br />8:00am – 6:00pm</p></div>
         </div>
