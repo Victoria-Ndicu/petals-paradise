@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { AccountButton, CartButton, CartDrawer, ShopRouter, useHashRoute, isShopRoute } from "./shop";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { ApiError, apiRequest } from "./api";
+import { AccountButton, CartButton, CartDrawer, ShopRouter, useCatalogue, useHashRoute, isShopRoute, money, type Product } from "./shop";
 
 const images = {
   hero: "https://images.unsplash.com/photo-1612526031467-2b6bf1f49961?auto=format&fit=crop&w=1600&q=85",
@@ -135,24 +136,18 @@ function ButtonLink({ href, children, variant = "primary", className = "" }: { h
   return <a href={href} className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition ${variants[variant]} ${className}`}>{children}</a>;
 }
 
-const products = [
-  { name: "Blush Romance", note: "Roses · Baby's breath · Seasonal greens", price: "KSh 4,500", image: images.blush, tag: "Bestseller" },
-  { name: "Paradise Rose", note: "Premium pink roses · Gift wrapped", price: "KSh 5,800", image: images.rose, tag: "Signature" },
-  { name: "Garden Poetry", note: "Mixed seasonal blooms · Soft pastels", price: "KSh 4,200", image: images.garden, tag: "Seasonal" },
-];
-
-function ProductCard({ product }: { product: typeof products[number] }) {
+function ProductCard({ product }: { product: Product }) {
   return (
     <article className="group">
       <div className="relative aspect-[4/5] overflow-hidden rounded-none bg-blush/30">
-        <img src={product.image} alt={`${product.name} flower arrangement`} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-        <span className="absolute left-4 top-4 rounded-full bg-ivory/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-forest backdrop-blur">{product.tag}</span>
+        <img src={product.image} alt={product.imageAlt} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+        {product.tag && <span className="absolute left-4 top-4 rounded-full bg-ivory/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-forest backdrop-blur">{product.tag}</span>}
         <button aria-label={`Save ${product.name}`} className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-ivory/90 text-forest transition hover:bg-white"><Icon name="heart" className="size-4" /></button>
       </div>
       <div className="pt-5">
         <div className="flex items-start justify-between gap-4">
           <div><h3 className="font-serif text-2xl text-forest">{product.name}</h3><p className="mt-1 text-sm text-charcoal/55">{product.note}</p></div>
-          <p className="shrink-0 font-semibold text-forest">{product.price}</p>
+          <p className="shrink-0 font-semibold text-forest">{money(product.price)}</p>
         </div>
         <a href="#/shop" className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-forest transition hover:text-rose"><Icon name="bag" className="size-4" /> Shop this bouquet</a>
       </div>
@@ -213,8 +208,35 @@ function ServiceDetail({ slug }: { slug: string }) {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { products, productsLoading, productsError } = useCatalogue();
+  const [inquiry, setInquiry] = useState({ name: "", phone: "", occasion: "", preferredContact: "whatsapp", details: "" });
+  const [inquiryState, setInquiryState] = useState<{ kind: "success" | "error"; message: string; fields?: Record<string, string> } | null>(null);
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const route = useHashRoute();
   const inShop = isShopRoute(route);
+
+  async function submitInquiry(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setInquirySubmitting(true);
+    setInquiryState(null);
+    try {
+      await apiRequest("/inquiries", {
+        method: "POST",
+        csrf: false,
+        body: inquiry,
+      });
+      setInquiry({ name: "", phone: "", occasion: "", preferredContact: "whatsapp", details: "" });
+      setInquiryState({ kind: "success", message: "Thanks — your inquiry has been sent. We’ll be in touch soon." });
+    } catch (error) {
+      setInquiryState({
+        kind: "error",
+        message: error instanceof Error ? error.message : "We couldn't send your inquiry. Please try again.",
+        ...(error instanceof ApiError ? { fields: error.fields } : {}),
+      });
+    } finally {
+      setInquirySubmitting(false);
+    }
+  }
 
   const nav = ["Shop", "Services", "About", "Contact"];
   const navHref = (item: string) => (item === "Shop" ? "#/shop" : `#${item.toLowerCase().replace(" ", "-")}`);
@@ -242,7 +264,7 @@ function App() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-ivory text-charcoal">
-      <div className="sticky top-0 z-50 bg-forest px-5 py-2.5 text-center text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-ivory/90">Same-day Nairobi delivery!</div>
+      <div className="sticky top-0 z-50 bg-forest px-5 py-2.5 text-center text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-ivory/90">Thoughtful flowers, delivered across Nairobi</div>
       <header className="relative z-40 border-b border-forest/10 bg-ivory/95 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between bg-white px-5 lg:px-8">
           <button aria-label="Open menu" onClick={() => setMenuOpen(true)} className="text-forest lg:hidden"><Icon name="menu" /></button>
@@ -295,7 +317,7 @@ function App() {
                   <div><p className="eyebrow">Our flower shop</p><h2 className="section-title">Fresh from our studio</h2><p className="mt-3 max-w-xl text-charcoal/60">Signature bouquets handcrafted in Westlands. Personalise yours with chocolates, a note, or a special gift.</p></div>
                   <a href="#/shop" className="inline-flex items-center gap-2 text-sm font-bold text-forest">View all flowers <Icon name="arrow" className="size-4" /></a>
                 </div>
-                <div className="mt-12 grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.name} product={product} />)}</div>
+                {productsLoading ? <p className="py-12 text-center text-sm text-charcoal/60">Loading flowers…</p> : productsError ? <p role="alert" className="py-12 text-center text-sm text-rose-dark">{productsError}</p> : <div className="mt-12 grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{products.filter((product) => product.category === "Flowers").slice(0, 3).map((product) => <ProductCard key={product.id} product={product} />)}</div>}
                 <div className="mt-14 rounded-2xl bg-blush/20 px-6 py-5 text-center text-sm text-charcoal/70 sm:flex sm:items-center sm:justify-center sm:gap-3"><Icon name="sparkle" className="mx-auto mb-2 size-5 text-gold sm:m-0" /><span><strong className="text-forest">Make it truly theirs.</strong> Add chocolates, a handwritten card, or a custom gift to any arrangement.</span></div>
               </div>
             </section>
@@ -340,13 +362,14 @@ function App() {
             <section id="contact" className="scroll-mt-20 bg-sage/25 py-24">
               <div className="mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
                 <div><p className="eyebrow">Let’s create something beautiful</p><h2 className="section-title">Tell us about your occasion</h2><p className="mt-5 max-w-md leading-7 text-charcoal/60">Share a few details and our floral team will get back to you with ideas, availability and a tailored quote.</p><div className="mt-8 space-y-4 text-sm"><a href="https://wa.me/254728829124" className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-forest text-ivory"><Icon name="whatsapp" className="size-4" /></span> WhatsApp +254 728 829 124</a><a href="tel:+254728829124" className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-ivory"><Icon name="call" className="size-4" /></span> Call +254 728 829 124</a><span className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-ivory"><Icon name="pin" className="size-4" /></span> Westlands, Nairobi</span></div></div>
-                <form className="grid gap-5 rounded-3xl bg-ivory p-6 shadow-sm sm:grid-cols-2 sm:p-9" onSubmit={(event) => event.preventDefault()}>
-                  <label className="field"><span>Your name</span><input required placeholder="Jane Wanjiku" /></label>
-                  <label className="field"><span>Phone number</span><input required type="tel" placeholder="+254 7..." /></label>
-                  <label className="field"><span>What are you planning?</span><select defaultValue=""><option value="" disabled>Select an occasion</option><option>Flower delivery</option><option>Wedding</option><option>Event décor</option><option>Flower maintenance</option><option>Funeral & sympathy flowers</option></select></label>
-                  <label className="field"><span>Preferred contact</span><select><option>WhatsApp</option><option>Call</option></select></label>
-                  <label className="field sm:col-span-2"><span>Tell us more</span><textarea rows={4} placeholder="Date, colours, style, budget or any special requests..." /></label>
-                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-6 py-4 text-sm font-semibold text-ivory transition hover:bg-forest-light sm:col-span-2">Send an inquiry <Icon name="arrow" className="size-4" /></button>
+                <form className="grid gap-5 rounded-3xl bg-ivory p-6 shadow-sm sm:grid-cols-2 sm:p-9" onSubmit={submitInquiry}>
+                  <label className="field"><span>Your name</span><input required value={inquiry.name} onChange={(event) => setInquiry({ ...inquiry, name: event.target.value })} placeholder="Jane Wanjiku" /></label>
+                  <label className="field"><span>Phone number</span><input required type="tel" value={inquiry.phone} onChange={(event) => setInquiry({ ...inquiry, phone: event.target.value })} placeholder="+254 7..." /></label>
+                  <label className="field"><span>What are you planning?</span><select required value={inquiry.occasion} onChange={(event) => setInquiry({ ...inquiry, occasion: event.target.value })}><option value="" disabled>Select an occasion</option><option value="flower_delivery">Flower delivery</option><option value="wedding">Wedding</option><option value="event_decor">Event décor</option><option value="flower_maintenance">Flower maintenance</option><option value="funeral">Funeral & sympathy flowers</option></select></label>
+                  <label className="field"><span>Preferred contact</span><select value={inquiry.preferredContact} onChange={(event) => setInquiry({ ...inquiry, preferredContact: event.target.value })}><option value="whatsapp">WhatsApp</option><option value="phone">Phone</option><option value="sms">SMS</option><option value="email">Email</option></select></label>
+                  <label className="field sm:col-span-2"><span>Tell us more</span><textarea rows={4} value={inquiry.details} onChange={(event) => setInquiry({ ...inquiry, details: event.target.value })} placeholder="Date, colours, style, budget or any special requests..." /></label>
+                  {inquiryState && <div role={inquiryState.kind === "error" ? "alert" : "status"} className={`rounded-xl px-4 py-3 text-sm sm:col-span-2 ${inquiryState.kind === "error" ? "bg-rose/10 text-rose-dark" : "bg-sage/30 text-forest"}`}><p>{inquiryState.message}</p>{inquiryState.fields && <ul className="mt-2 list-inside list-disc">{Object.entries(inquiryState.fields).map(([field, message]) => <li key={field}>{field}: {message}</li>)}</ul>}</div>}
+                  <button disabled={inquirySubmitting} type="submit" className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-6 py-4 text-sm font-semibold text-ivory transition hover:bg-forest-light disabled:opacity-60 sm:col-span-2">{inquirySubmitting ? "Sending…" : "Send an inquiry"} <Icon name="arrow" className="size-4" /></button>
                 </form>
               </div>
             </section>
