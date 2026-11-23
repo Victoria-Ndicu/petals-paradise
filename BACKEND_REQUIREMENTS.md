@@ -287,12 +287,14 @@ the frontend. `GET /delivery-options` must return available areas with an
 containing numeric slot IDs and display labels. The frontend submits the
 selected delivery details with the order; it does not submit a trusted fee.
 
-The currently configured live endpoint returned
-`{"currency":"KES","timeZone":"Africa/Nairobi","minLeadHours":3,
-"maxDaysAhead":90,"areas":[],"slots":[]}` during frontend troubleshooting.
-With empty `areas` and `slots` arrays, checkout cannot offer an area or time
-slot. Seed active delivery areas and their available slots in the backend; the
-frontend must not invent IDs, fees, or times that the order API cannot validate.
+The live endpoint currently returns global delivery slots and booking rules,
+but an empty `areas` array. The frontend maps the global `slots` list onto each
+area returned by the endpoint, but cannot offer delivery until at least one
+area is configured. Seed active delivery areas with IDs, names, and fees in
+the backend; the frontend must not invent IDs, fees, or areas the order API
+cannot validate. The response-level `maxDaysAhead` is used when an area does
+not override its own booking horizon. The backend remains authoritative for
+the exact `minLeadHours` rule and blocked dates at order creation.
 
 The order request contains `items` with `productId` (slug), numeric
 `variantId`, `presentationId`, and `quantity`, plus `recipientName`,

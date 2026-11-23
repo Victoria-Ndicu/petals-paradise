@@ -183,11 +183,18 @@ export async function getProducts(): Promise<ApiProduct[]> {
   return products;
 }
 
-export type ApiDeliverySlot = { id: number; label?: string; name?: string };
+export type ApiDeliverySlot = {
+  id: number | string;
+  label?: string;
+  name?: string;
+  start_time?: string;
+  end_time?: string;
+};
 export type ApiDeliveryOption = {
   id: string | number;
   name: string;
   fee?: number | string;
+  feeKes?: number | string;
   delivery_fee?: number | string;
   timeSlots?: ApiDeliverySlot[];
   time_slots?: ApiDeliverySlot[];
@@ -196,6 +203,17 @@ export type ApiDeliveryOption = {
   lead_time_days?: number;
   maxDaysAhead?: number;
   max_days_ahead?: number;
+};
+
+export type ApiDeliveryOptionsResponse = {
+  currency?: string;
+  timeZone?: string;
+  minLeadHours?: number;
+  maxDaysAhead?: number;
+  blockedDates?: string[];
+  results?: ApiDeliveryOption[];
+  areas?: ApiDeliveryOption[];
+  slots?: ApiDeliverySlot[];
 };
 
 export type ApiUser = {
@@ -329,15 +347,17 @@ export function normalizeProduct(raw: ApiProduct) {
   } as const;
 }
 
-export function normalizeDeliveryOptions(value: ApiDeliveryOption[] | { results?: ApiDeliveryOption[]; areas?: ApiDeliveryOption[] }) {
+export function normalizeDeliveryOptions(value: ApiDeliveryOption[] | ApiDeliveryOptionsResponse) {
   const options = Array.isArray(value) ? value : value.results ?? value.areas ?? [];
+  const sharedSlots = Array.isArray(value) ? [] : value.slots ?? [];
+  const maxDaysAhead = Array.isArray(value) ? 30 : Number(value.maxDaysAhead ?? 30);
   return options.map((option) => ({
     id: String(option.id),
     name: option.name,
-    fee: Number(option.fee ?? option.delivery_fee ?? 0),
+    fee: Number(option.fee ?? option.feeKes ?? option.delivery_fee ?? 0),
     leadTimeDays: Number(option.leadTimeDays ?? option.lead_time_days ?? 0),
-    maxDaysAhead: Number(option.maxDaysAhead ?? option.max_days_ahead ?? 30),
-    timeSlots: (option.timeSlots ?? option.time_slots ?? option.slots ?? []).map((slot) => ({
+    maxDaysAhead: Number(option.maxDaysAhead ?? option.max_days_ahead ?? maxDaysAhead),
+    timeSlots: (option.timeSlots ?? option.time_slots ?? option.slots ?? sharedSlots).map((slot) => ({
       id: Number(slot.id),
       label: slot.label ?? (slot as ApiDeliverySlot & { name?: string }).name ?? `Slot ${slot.id}`,
     })),

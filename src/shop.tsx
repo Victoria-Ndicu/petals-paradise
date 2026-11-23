@@ -22,6 +22,7 @@ import {
   normalizeUser,
   type ApiCreateOrderRequest,
   type ApiDeliveryOption,
+  type ApiDeliveryOptionsResponse,
   type ApiOrder,
   type ApiUser,
 } from "./api";
@@ -196,7 +197,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       }
       if (!active) return;
 
-      apiRequest<ApiDeliveryOption[] | { results?: ApiDeliveryOption[]; areas?: ApiDeliveryOption[] }>("/delivery-options")
+      apiRequest<ApiDeliveryOption[] | ApiDeliveryOptionsResponse>("/delivery-options")
         .then((response) => {
           if (active) {
             setDeliveryOptions(normalizeDeliveryOptions(response));
