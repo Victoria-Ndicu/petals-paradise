@@ -138,18 +138,18 @@ function ButtonLink({ href, children, variant = "primary", className = "" }: { h
 
 function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="group">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-none bg-blush/30">
-        <img src={product.image} alt={product.imageAlt} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-        {product.tag && <span className="absolute left-4 top-4 rounded-full bg-ivory/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-forest backdrop-blur">{product.tag}</span>}
-        <button aria-label={`Save ${product.name}`} className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-ivory/90 text-forest transition hover:bg-white"><Icon name="heart" className="size-4" /></button>
+    <article className="group flex min-w-0 items-center gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-forest/10 sm:block sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none sm:ring-0">
+      <div className="relative size-24 shrink-0 overflow-hidden rounded-lg bg-blush/30 sm:aspect-[4/5] sm:size-auto sm:rounded-none">
+        <img src={product.image} alt={product.imageAlt} loading="lazy" className="h-full w-full object-cover transition duration-700 sm:group-hover:scale-105" />
+        {product.tag && <span className="absolute left-1 top-1 rounded-full bg-ivory/90 px-1.5 py-1 text-[0.5rem] font-bold uppercase tracking-wider text-forest backdrop-blur sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[0.65rem] sm:tracking-[0.18em]">{product.tag}</span>}
+        <button aria-label={`Save ${product.name}`} className="absolute right-2 top-2 hidden size-10 place-items-center rounded-full bg-ivory/90 text-forest transition hover:bg-white sm:grid"><Icon name="heart" className="size-4" /></button>
       </div>
-      <div className="pt-5">
+      <div className="min-w-0 flex-1 sm:pt-5">
         <div className="flex items-start justify-between gap-4">
-          <div><h3 className="font-serif text-2xl text-forest">{product.name}</h3><p className="mt-1 text-sm text-charcoal/55">{product.note}</p></div>
-          <p className="shrink-0 font-semibold text-forest">{money(product.price)}</p>
+          <div className="min-w-0"><h3 className="line-clamp-2 font-serif text-lg leading-tight text-forest sm:text-2xl">{product.name}</h3><p className="mt-1 line-clamp-2 text-xs text-charcoal/55 sm:text-sm">{product.note}</p></div>
+          <p className="shrink-0 text-sm font-semibold text-forest sm:text-base">{money(product.price)}</p>
         </div>
-        <a href="#/shop" className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-forest transition hover:text-rose"><Icon name="bag" className="size-4" /> Shop this bouquet</a>
+        <a href="#/shop" className="mt-2 inline-flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-forest transition hover:text-rose sm:mt-4 sm:gap-2 sm:text-xs sm:tracking-[0.16em]"><Icon name="bag" className="size-3.5 sm:size-4" /> Shop this bouquet</a>
       </div>
     </article>
   );
@@ -311,33 +311,33 @@ function App() {
               </div>
             </section>
 
-            <section id="shop-preview" className="scroll-mt-20 py-24">
+            <section id="shop-preview" className="scroll-mt-20 bg-white py-10 sm:py-24">
               <div className="mx-auto max-w-7xl px-5 lg:px-8">
-                <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-                  <div><p className="eyebrow">Our flower shop</p><h2 className="section-title">Fresh from our studio</h2><p className="mt-3 max-w-xl text-charcoal/60">Signature bouquets handcrafted in Westlands. Personalise yours with chocolates, a note, or a special gift.</p></div>
-                  <a href="#/shop" className="inline-flex items-center gap-2 text-sm font-bold text-forest">View all flowers <Icon name="arrow" className="size-4" /></a>
+                <div className="flex items-end justify-between gap-3 sm:gap-5">
+                  <div className="min-w-0"><p className="eyebrow">Our flower shop</p><h2 className="mt-2 font-serif text-3xl leading-tight text-forest sm:mt-3 sm:text-5xl">Fresh from our studio</h2><p className="mt-2 max-w-xl text-sm text-charcoal/60 sm:mt-3 sm:text-base">Signature bouquets handcrafted in Westlands. Personalise yours with chocolates, a note, or a special gift.</p></div>
+                  <a href="#/shop" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-forest/20 px-3 py-2 text-xs font-bold text-forest sm:gap-2 sm:border-0 sm:px-0 sm:py-0 sm:text-sm">Shop all <Icon name="arrow" className="size-3.5 sm:size-4" /></a>
                 </div>
-                {productsLoading ? <div role="status" aria-label="Loading flowers" className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><span className="sr-only">Loading flowers…</span>{Array.from({ length: 3 }, (_, index) => <div key={index} aria-hidden="true" className="animate-pulse"><div className="aspect-[4/5] bg-sage/20" /><div className="mt-5 h-6 w-2/3 rounded bg-sage/25" /><div className="mt-3 h-4 w-full rounded bg-sage/20" /><div className="mt-2 h-4 w-1/2 rounded bg-sage/20" /></div>)}</div> : productsError ? <p role="alert" className="py-12 text-center text-sm text-rose-dark">{productsError}</p> : <div className="mt-12 grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{products.filter((product) => product.category === "Flowers").slice(0, 3).map((product) => <ProductCard key={product.id} product={product} />)}</div>}
-                <div className="mt-14 rounded-2xl bg-blush/20 px-6 py-5 text-center text-sm text-charcoal/70 sm:flex sm:items-center sm:justify-center sm:gap-3"><Icon name="sparkle" className="mx-auto mb-2 size-5 text-gold sm:m-0" /><span><strong className="text-forest">Make it truly theirs.</strong> Add chocolates, a handwritten card, or a custom gift to any arrangement.</span></div>
+                {productsLoading ? <div role="status" aria-label="Loading flowers" className="mt-5 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3"><span className="sr-only">Loading flowers…</span>{Array.from({ length: 3 }, (_, index) => <div key={index} aria-hidden="true" className="flex animate-pulse items-center gap-3 rounded-xl bg-ivory p-3 sm:block sm:rounded-none sm:bg-transparent sm:p-0"><div className="size-24 shrink-0 rounded-lg bg-sage/20 sm:aspect-[4/5] sm:size-auto sm:rounded-none" /><div className="flex-1 space-y-3 sm:mt-5"><div className="h-5 w-2/3 rounded bg-sage/25" /><div className="h-4 w-full rounded bg-sage/20" /><div className="h-4 w-1/2 rounded bg-sage/20" /></div></div>)}</div> : productsError ? <p role="alert" className="py-8 text-center text-sm text-rose-dark sm:py-12">{productsError}</p> : <div className="mt-5 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-x-7 sm:gap-y-12 lg:grid-cols-3">{products.filter((product) => product.category === "Flowers").slice(0, 3).map((product) => <ProductCard key={product.id} product={product} />)}</div>}
+                <div className="mt-5 flex items-center gap-3 rounded-xl bg-blush/15 px-4 py-3 text-left text-xs leading-5 text-charcoal/70 sm:mt-14 sm:justify-center sm:gap-3 sm:rounded-2xl sm:px-6 sm:py-5 sm:text-center sm:text-sm"><Icon name="sparkle" className="size-5 shrink-0 text-gold" /><span><strong className="text-forest">Make it truly theirs.</strong> Add chocolates, a handwritten card, or a custom gift to any arrangement.</span></div>
               </div>
             </section>
 
-            <section id="services" className="scroll-mt-20 bg-forest py-24 text-ivory">
+            <section id="services" className="scroll-mt-20 bg-forest py-10 text-ivory sm:py-24">
               <div className="mx-auto max-w-7xl px-5 lg:px-8">
-                <div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
-                  <div><p className="eyebrow !text-gold">Beyond the bouquet</p><h2 className="font-serif text-5xl leading-none sm:text-6xl">Floral care for spaces and celebrations.</h2><p className="mt-6 leading-7 text-ivory/60">Thoughtful, full-service floral design for homes, offices, intimate gatherings and once-in-a-lifetime occasions.</p><ButtonLink href="#contact" variant="light" className="mt-8">Request a quote <Icon name="arrow" className="size-4" /></ButtonLink></div>
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <article className="group overflow-hidden rounded-2xl bg-ivory/5">
-                      <div className="h-64 overflow-hidden"><img src={images.florist} alt="Florist maintaining a flower arrangement" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
-                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">01 · Ongoing care</span><h3 className="mt-3 font-serif text-3xl">Flower maintenance</h3><p className="mt-3 text-sm leading-6 text-ivory/55">Regular styling, refreshing and care for flowers in your home, office, hotel or restaurant.</p><a href="#/services/flower-maintenance" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
+                <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
+                  <div><p className="eyebrow !text-gold">Beyond the bouquet</p><h2 className="mt-2 font-serif text-3xl leading-tight sm:mt-3 sm:text-6xl">Floral care for spaces and celebrations.</h2><p className="mt-3 text-sm leading-6 text-ivory/60 sm:mt-6 sm:text-base sm:leading-7">Thoughtful floral design for homes, offices, gatherings and special occasions.</p><ButtonLink href="#contact" variant="light" className="mt-4 !px-4 !py-2.5 text-xs sm:mt-8 sm:!px-6 sm:!py-3.5 sm:text-sm">Request a quote <Icon name="arrow" className="size-4" /></ButtonLink></div>
+                  <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-5">
+                    <article className="group flex overflow-hidden rounded-xl bg-ivory/5 sm:block sm:rounded-2xl">
+                      <div className="h-24 w-24 shrink-0 overflow-hidden sm:h-48 sm:w-auto"><img src={images.florist} alt="Florist maintaining a flower arrangement" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
+                      <div className="min-w-0 p-3 sm:p-7"><span className="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-gold sm:text-xs sm:tracking-[0.2em]">01 · Ongoing care</span><h3 className="mt-1 font-serif text-lg leading-tight sm:mt-3 sm:text-3xl">Flower maintenance</h3><p className="mt-1 line-clamp-2 text-xs leading-4 text-ivory/55 sm:mt-3 sm:text-sm sm:leading-6">Regular styling, refreshing and care for flowers in your home, office, hotel or restaurant.</p><a href="#/services/flower-maintenance" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold sm:mt-6 sm:gap-2 sm:text-sm">Explore service <Icon name="arrow" className="size-3.5 sm:size-4" /></a></div>
                     </article>
-                    <article className="group overflow-hidden rounded-2xl bg-ivory/5 sm:translate-y-8">
-                      <div className="h-64 overflow-hidden"><img src={images.event} alt="Elegant event table decorated with flowers" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
-                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">02 · Bespoke design</span><h3 className="mt-3 font-serif text-3xl">Events & décor</h3><p className="mt-3 text-sm leading-6 text-ivory/55">From bridal florals to baby showers, birthday parties and tablescapes, we design every detail around your story.</p><a href="#/services/events-decor" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
+                    <article className="group flex overflow-hidden rounded-xl bg-ivory/5 sm:block sm:translate-y-8 sm:rounded-2xl">
+                      <div className="h-24 w-24 shrink-0 overflow-hidden sm:h-48 sm:w-auto"><img src={images.event} alt="Elegant event table decorated with flowers" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
+                      <div className="min-w-0 p-3 sm:p-7"><span className="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-gold sm:text-xs sm:tracking-[0.2em]">02 · Bespoke design</span><h3 className="mt-1 font-serif text-lg leading-tight sm:mt-3 sm:text-3xl">Events & décor</h3><p className="mt-1 line-clamp-2 text-xs leading-4 text-ivory/55 sm:mt-3 sm:text-sm sm:leading-6">From bridal florals to baby showers, birthday parties and tablescapes, we design every detail around your story.</p><a href="#/services/events-decor" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold sm:mt-6 sm:gap-2 sm:text-sm">Explore service <Icon name="arrow" className="size-3.5 sm:size-4" /></a></div>
                     </article>
-                    <article className="group overflow-hidden rounded-2xl bg-ivory/5">
-                      <div className="h-64 overflow-hidden"><img src={images.funeralHeart} alt="Heart-shaped white funeral flower tribute" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
-                      <div className="p-7"><span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">03 · With care</span><h3 className="mt-3 font-serif text-3xl">Funeral & sympathy flowers</h3><p className="mt-3 text-sm leading-6 text-ivory/55">Thoughtful floral tributes to honour a life and offer comfort, with delivery to the service or family home.</p><a href="#/services/funeral-sympathy" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Explore this service <Icon name="arrow" className="size-4" /></a></div>
+                    <article className="group flex overflow-hidden rounded-xl bg-ivory/5 sm:block sm:rounded-2xl">
+                      <div className="h-24 w-24 shrink-0 overflow-hidden sm:h-48 sm:w-auto"><img src={images.funeralHeart} alt="Heart-shaped white funeral flower tribute" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /></div>
+                      <div className="min-w-0 p-3 sm:p-7"><span className="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-gold sm:text-xs sm:tracking-[0.2em]">03 · With care</span><h3 className="mt-1 font-serif text-lg leading-tight sm:mt-3 sm:text-3xl">Funeral & sympathy flowers</h3><p className="mt-1 line-clamp-2 text-xs leading-4 text-ivory/55 sm:mt-3 sm:text-sm sm:leading-6">Thoughtful floral tributes to honour a life and offer comfort, with delivery to the service or family home.</p><a href="#/services/funeral-sympathy" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold sm:mt-6 sm:gap-2 sm:text-sm">Explore service <Icon name="arrow" className="size-3.5 sm:size-4" /></a></div>
                     </article>
                   </div>
                 </div>
