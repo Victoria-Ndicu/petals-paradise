@@ -606,22 +606,23 @@ export function CartDrawer() {
 function ShopCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
   const soldOut = product.stock === 0;
   return (
-    <article className="group">
-      <button onClick={onOpen} className="relative block aspect-[4/5] w-full overflow-hidden bg-blush/30 text-left" aria-label={`View ${product.name}`}>
-        <img src={product.image} alt={product.imageAlt} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-        {product.tag && <span className="absolute left-3 top-3 rounded-full bg-ivory/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-forest backdrop-blur sm:left-4 sm:top-4">{product.tag}</span>}
-        {product.stock !== null && product.stock > 0 && product.stock <= 5 && <span className="absolute bottom-3 left-3 rounded-full bg-rose px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ivory sm:bottom-4 sm:left-4">Only {product.stock} left</span>}
+    <article className="group flex min-w-0 gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-forest/10 transition hover:shadow-md sm:gap-5 sm:p-4">
+      <button onClick={onOpen} className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-xl bg-blush/30 text-left sm:w-32 md:w-40" aria-label={`View ${product.name}`}>
+        <img src={product.image} alt={product.imageAlt} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {product.tag && <span className="absolute left-1.5 top-1.5 rounded-full bg-ivory/90 px-2 py-1 text-[0.55rem] font-bold uppercase tracking-wider text-forest backdrop-blur sm:left-2 sm:top-2 sm:text-[0.65rem]">{product.tag}</span>}
+        {product.stock !== null && product.stock > 0 && product.stock <= 5 && <span className="absolute inset-x-1 bottom-1 rounded-full bg-rose px-1.5 py-1 text-[0.5rem] font-bold uppercase leading-tight text-ivory sm:inset-x-2 sm:bottom-2 sm:px-2 sm:text-[0.65rem]">Only {product.stock} left</span>}
       </button>
-      <div className="pt-4 sm:pt-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="font-serif text-2xl text-forest">{product.name}</h3>
-            <p className="mt-1 text-sm text-charcoal/55">{product.note}</p>
+      <div className="flex min-w-0 flex-1 flex-col justify-center py-0.5">
+        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+          <div className="min-w-0">
+            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-rose-dark sm:text-xs">{product.category}</p>
+            <h3 className="mt-1 font-serif text-lg leading-tight text-forest sm:text-2xl">{product.name}</h3>
           </div>
-          <p className="shrink-0 font-semibold text-forest">From {money(product.price)}</p>
+          <p className="shrink-0 text-sm font-semibold text-forest sm:text-base">From {money(product.price)}</p>
         </div>
-        <Btn disabled={soldOut} onClick={onOpen} className="mt-4 w-full !py-3">
-          {soldOut ? "Sold out" : <>Choose options <Ico name="bag" className="size-4" /></>}
+        <p className="mt-1 line-clamp-2 text-xs leading-5 text-charcoal/55 sm:mt-2 sm:text-sm">{product.note || product.description}</p>
+        <Btn disabled={soldOut} onClick={onOpen} className="mt-2 self-start !px-4 !py-2 text-xs sm:mt-3 sm:!px-5 sm:!py-2.5 sm:text-sm">
+          {soldOut ? "Sold out" : <>Choose options <Ico name="bag" className="size-3.5 sm:size-4" /></>}
         </Btn>
       </div>
     </article>
@@ -749,7 +750,7 @@ export function ShopPage() {
               <p className="mt-2 text-sm text-charcoal/55">Try another search, or <a className="font-semibold text-forest underline" href={`https://wa.me/${WHATSAPP}`}>ask us on WhatsApp</a> for a custom order.</p>
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-1 gap-x-7 gap-y-12 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:gap-4">
               {visible.map((p) => <ShopCard key={p.id} product={p} onOpen={() => setSelected(p)} />)}
             </div>
           )}
