@@ -4,7 +4,7 @@
 
 This document defines the backend needed to support the existing Petals Paradise
 React storefront. It is based on the current frontend in `src/App.tsx`,
-`src/shop.tsx`, and `src/catalogue-data.ts`; it is not a description of a
+`src/shop.tsx`, and `src/api.ts`; it is not a description of a
 backend that already exists.
 
 The backend must provide a secure system of record for the product catalogue,
@@ -19,10 +19,9 @@ availability, authenticate users, or confirm payments.
 - The project is a Vite/React/TypeScript single-page application. There are no
   backend source files, API client, server routes, database migrations, or
   backend tests in the tracked project.
-- The storefront catalogue is a static TypeScript array in
-  `src/catalogue-data.ts`; the UI reads it locally and does not fetch products
-  from `GET /products`. The UI maps its entries to display products in
-  `src/shop.tsx`.
+- The storefront fetches its product catalogue from `GET /products` using the
+  configured `VITE_API_BASE_URL`. It renders a loading list while the API
+  responds, then displays the returned products in `src/shop.tsx`.
 - Cart contents, accounts, session identity, and orders are stored in browser
   `localStorage` in `src/shop.tsx`. This storage is not shared across devices
   and can be altered by the customer.
@@ -31,13 +30,13 @@ availability, authenticate users, or confirm payments.
 
 | Priority | Finding | Backend implication |
 |---|---|---|
-| Critical | M-Pesa checkout is simulated: it waits briefly and always returns a successful fake receipt. | Replace it with a server-created order, Daraja STK Push, and verified callback/status handling. Never show an order as paid based only on the browser response. |
-| Critical | The browser currently supplies the total, item prices, and a generated order reference. | Recalculate all prices, delivery fees, totals, and order references on the server from current database records. |
+| Critical | The current order API does not initiate or verify M-Pesa payments. | Add a server-side Daraja STK Push flow and verified callback/status handling before claiming a payment prompt was sent or showing an order as paid. |
+| Critical | The browser displays an estimated total based on API prices and delivery fees. | Recalculate all prices, delivery fees, totals, and order references on the server from current database records. |
 | High | Passwords are SHA-256 hashed in browser storage, while session identity is just a local user ID. | Implement server-side password hashing and secure server-managed sessions; do not migrate or trust local hashes or local session IDs. |
-| High | Product stock is currently hard-coded to 99 and catalogues/prices are static. | Store authoritative availability and variant prices server-side and prevent overselling during order placement. |
+| High | Catalogue prices and availability are displayed from the products API but may change before checkout. | Store authoritative availability and variant prices server-side and revalidate them during order placement to prevent stale pricing and overselling. |
 | High | Orders and profile data exist only in the current browser. | Persist them server-side, associate each order with its customer, and expose an authenticated order history. |
 | High | The homepage inquiry form prevents submission without sending or storing the inquiry. | Add an inquiry endpoint and connect the form to it with validation and clear success/error feedback. |
-| Medium | Delivery areas and fees are hard-coded and explicitly marked as placeholders. | Configure and maintain valid delivery zones, fees, and service availability on the server. |
+| Medium | Delivery areas and fees depend on the delivery-options API having active configuration. | Configure and maintain valid delivery zones, fees, and service availability on the server. |
 | Medium | Google and Apple sign-in buttons are placeholders. | Treat social sign-in as a later optional feature unless product owners require it for launch. |
 | Medium | Checkout requires account sign-in, even though the cart is browser-local. | Preserve this behavior for the initial backend unless guest checkout is explicitly approved; safely merge a guest cart after sign-in. |
 
@@ -90,41 +89,30 @@ manage staff accounts. Public sign-up must never grant staff privileges.
 - Provide protected staff operations to create, edit, publish/unpublish, and
   retire products; edit variants/prices, availability, and media metadata.
 
-#### Linking the local catalogue to backend products
+#### Product catalogue API contract
 
-The storefront displays `CATALOGUE` from `src/catalogue-data.ts` locally.
-Product rows must therefore be seeded or created on the backend using the
-stable IDs in that file; loading a product in the browser does not create its
-backend record. Keep these identifiers unchanged when updating product names
-or descriptions.
+The shop requests `GET /products?ordering=name&page=1` from
+`VITE_API_BASE_URL`, follows same-API pagination links, and uses the returned
+products as the only catalogue source. Return either a product array or a
+paginated object with `count`, `next`, `previous`, and `results`.
 
-The checkout sends each item as `{productId, variantId, presentationId,
-quantity}`:
+Each product should provide:
 
-- `productId` is the catalogue `id` unchanged (for example, `fl-001` or
-  `fr-001`). Store it as a unique backend slug and look up orders by that slug.
-- `variantId` is the one-based position in that product's `prices` (`1` is the
-  first price, `2` the second, and so on). Store this as a product-scoped tier
-  number and resolve it together with `productId`; do not assume it is a
-  globally unique database primary key. For each product, the tier number and
-  price must match the corresponding array position. The frontend displays
-  generic labels (`Size 1`, `Size 2`, etc.) until tier names are defined.
-- `presentationId` is one of the exact strings in `presentations` (for
-  example, `hand`, `glass`, `basket`, or `giftbasket`). Store/validate those
-  values as presentation codes for that product.
-- Product name, category, ingredients, description, occasions, and seasonal
-  status come from the corresponding catalogue fields. The frontend does not
-  send a price; the backend must use its own active product and variant price
-  when creating an order.
+- `id` (or `slug`), `name`, `categoryName`, and `description`.
+- `image` and `imageAlt`; the shop displays the supplied image URL and
+  alternate text.
+- `startingPriceKes` for the listing price.
+- `variants` with numeric `id`, `label`, `priceKes`, and `availability`.
+- `presentations` with the presentation IDs and optional labels used by
+  checkout.
+- Optional `isSeasonal`, `seasonNote`, `ingredients`, `palette`, `occasions`,
+  and `stock`.
 
-For example, the first price tier of `fl-001` in the `paper` presentation
-arrives as `{"productId":"fl-001","variantId":1,"presentationId":"paper",
-"quantity":1}`. The backend must have an active product with slug `fl-001`, its
-first price tier, and allow presentation `paper`, or reject the item as
-unavailable/invalid. This same mapping applies to all products in
-`CATALOGUE`; the backend catalogue endpoint may still serve as an administrative
-or future synchronization interface, but the current storefront does not read
-products from it.
+The shop keeps its existing search, category, sort, product options, and cart
+layout, and maps the API fields into that view model. Displayed prices and
+availability are informational; checkout still sends product/variant/
+presentation IDs and the backend must use its own current prices and
+availability when creating an order.
 
 ### 4.2 Customer identity, authentication, and profile
 

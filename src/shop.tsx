@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import {
   apiRequest,
   ApiError,
+  getProducts,
   initializeApi,
   refreshApiCsrf,
   normalizeDeliveryOptions,
@@ -24,7 +25,6 @@ import {
   type ApiOrder,
   type ApiUser,
 } from "./api";
-import { CATALOGUE, type CatalogueProduct } from "./catalogue-data";
 
 /* ------------------------------------------------------------------ */
 /*  Data (swap for your API / database later)                          */
@@ -32,54 +32,13 @@ import { CATALOGUE, type CatalogueProduct } from "./catalogue-data";
 
 export type Category = "Flowers" | "Fruit & gifts";
 
-export type Product = {
-  id: string;
-  name: string;
-  note: string;
-  ingredients: string;
-  palette: string;
-  description: string;
-  price: number;
-  prices: number[];
-  variants: { id: number; label: string; price: number }[];
-  presentations: { id: string; label: string }[];
-  category: Category;
-  image: string;
-  imageAlt: string;
-  occasions: string[];
-  seasonal: boolean;
-  photoBrief: string;
-  tag?: string;
-  stock: number | null;
-};
+export type Product = ReturnType<typeof normalizeProduct>;
 
 const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts"];
 
 const WHATSAPP = "254728829124";
 
 export const money = (n: number) => `KSh ${n.toLocaleString("en-KE")}`;
-
-function toStoreProduct(product: CatalogueProduct, index: number): Product {
-  const normalized = normalizeProduct({
-    id: product.id,
-    name: product.name,
-    ingredients: product.ingredients,
-    palette: product.palette,
-    description: product.description,
-    category: product.category,
-    image: product.image,
-    imageAlt: product.imageAlt,
-    occasions: product.occasions,
-    seasonal: product.seasonal,
-    variants: product.prices.map((price, tierIndex) => ({
-      id: tierIndex + 1,
-      label: `Size ${tierIndex + 1}`,
-      price,
-    })),
-    presentations: product.presentations,
-  }, index);
-  return { ...normalized, photoBrief: product.photoBrief };
-}
 
 /* ------------------------------------------------------------------ */
 /*  Storage helpers                                                    */
@@ -195,9 +154,9 @@ export function useCatalogue() {
 }
 
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const [products] = useState<Product[]>(() => CATALOGUE.map(toStoreProduct));
-  const productsLoading = false;
-  const productsError = "";
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState("");
   const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
   const [deliveryLoading, setDeliveryLoading] = useState(true);
   const [deliveryError, setDeliveryError] = useState("");
@@ -211,6 +170,20 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    getProducts()
+      .then((response) => {
+        if (active) {
+          setProducts(response.map(normalizeProduct));
+          setProductsError("");
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setProductsError(error instanceof Error ? error.message : "Could not load products.");
+      })
+      .finally(() => {
+        if (active) setProductsLoading(false);
+      });
+
     void (async () => {
       try {
         await initializeApi();
@@ -608,7 +581,7 @@ function ShopCard({ product, onOpen }: { product: Product; onOpen: () => void })
   return (
     <article className="group flex min-w-0 gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-forest/10 transition hover:shadow-md sm:gap-5 sm:p-4">
       <button onClick={onOpen} className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-xl bg-blush/30 text-left sm:w-32 md:w-40" aria-label={`View ${product.name}`}>
-        <img src={product.image} alt={product.imageAlt} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {product.image && <img src={product.image} alt={product.imageAlt} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
         {product.tag && <span className="absolute left-1.5 top-1.5 rounded-full bg-ivory/90 px-2 py-1 text-[0.55rem] font-bold uppercase tracking-wider text-forest backdrop-blur sm:left-2 sm:top-2 sm:text-[0.65rem]">{product.tag}</span>}
         {product.stock !== null && product.stock > 0 && product.stock <= 5 && <span className="absolute inset-x-1 bottom-1 rounded-full bg-rose px-1.5 py-1 text-[0.5rem] font-bold uppercase leading-tight text-ivory sm:inset-x-2 sm:bottom-2 sm:px-2 sm:text-[0.65rem]">Only {product.stock} left</span>}
       </button>
@@ -629,6 +602,20 @@ function ShopCard({ product, onOpen }: { product: Product; onOpen: () => void })
   );
 }
 
+function ShopCardSkeleton() {
+  return (
+    <div aria-hidden="true" className="flex min-w-0 gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-forest/10 sm:gap-5 sm:p-4">
+      <div className="aspect-square w-24 shrink-0 animate-pulse rounded-xl bg-sage/25 sm:w-32 md:w-40" />
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-3">
+        <div className="h-3 w-20 animate-pulse rounded bg-sage/25" />
+        <div className="h-6 w-3/4 animate-pulse rounded bg-sage/25" />
+        <div className="h-4 w-full animate-pulse rounded bg-sage/20" />
+        <div className="h-9 w-32 animate-pulse rounded-full bg-sage/25" />
+      </div>
+    </div>
+  );
+}
+
 function ProductModal({ product, onClose }: { product: Product; onClose: () => void }) {
   const { add } = useCart();
   const [qty, setQty] = useState(1);
@@ -637,6 +624,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
   const variant = product.variants.find((option) => option.id === variantId) ?? product.variants[0];
   const presentation = product.presentations.find((option) => option.id === presentationId) ?? product.presentations[0];
   const price = variant.price;
+  const variantUnavailable = variant.available === false;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -653,17 +641,18 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
       <div className="absolute inset-0 bg-forest/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative grid max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-3xl bg-ivory sm:rounded-3xl md:grid-cols-2">
         <button aria-label="Close" onClick={onClose} className="absolute right-4 top-4 z-10 grid size-10 place-items-center rounded-full bg-ivory/90 text-forest"><Ico name="close" className="size-4" /></button>
-        <img src={product.image} alt={product.imageAlt} className="h-64 w-full object-cover md:h-full md:min-h-[32rem]" />
+        {product.image && <img src={product.image} alt={product.imageAlt} className="h-64 w-full object-cover md:h-full md:min-h-[32rem]" />}
         <div className="flex flex-col p-6 sm:p-10">
           <p className="eyebrow">{product.category}</p>
           <h2 className="mt-3 font-serif text-4xl leading-none text-forest sm:text-5xl">{product.name}</h2>
           <p className="mt-4 text-2xl font-semibold text-forest">{money(price)}</p>
           <p className="mt-4 leading-7 text-charcoal/65">{product.description}</p>
           <p className="mt-3 text-sm text-charcoal/50">{product.ingredients} · {product.palette}</p>
+          {product.seasonNote && <p className="mt-3 rounded-xl bg-sage/15 px-4 py-3 text-sm text-forest">{product.seasonNote}</p>}
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <label className="field"><span>Size</span>
               <select value={variantId} onChange={(event) => setVariantId(Number(event.target.value))}>
-                {product.variants.map((option) => <option key={option.id} value={option.id}>{option.label} · {money(option.price)}</option>)}
+                {product.variants.map((option) => <option key={option.id} value={option.id} disabled={option.available === false}>{option.label} · {money(option.price)}{option.available === false ? " · Unavailable" : ""}</option>)}
               </select>
             </label>
             <label className="field"><span>Presentation</span>
@@ -679,8 +668,8 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
           </ul>
           <div className="mt-auto flex items-center gap-3 pt-7">
             <QtyStepper qty={qty} max={product.stock ?? Number.MAX_SAFE_INTEGER} onChange={(q) => setQty(Math.max(1, q))} />
-            <Btn disabled={product.stock === 0} onClick={() => { add(product.id, qty, { price, variantId, variantLabel: variant.label, presentation: presentation.id, presentationLabel: presentation.label }); onClose(); }} className="flex-1 !px-4">
-              Add · {money(price * qty)}
+            <Btn disabled={product.stock === 0 || variantUnavailable} onClick={() => { add(product.id, qty, { price, variantId, variantLabel: variant.label, presentation: presentation.id, presentationLabel: presentation.label }); onClose(); }} className="flex-1 !px-4">
+              {variantUnavailable ? "Unavailable" : <>Add · {money(price * qty)}</>}
             </Btn>
           </div>
         </div>
@@ -741,7 +730,10 @@ export function ShopPage() {
           </div>
 
           {productsLoading ? (
-            <p className="py-20 text-center text-sm text-charcoal/60">Loading products…</p>
+            <div role="status" aria-label="Loading products" className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:gap-4">
+              <span className="sr-only">Loading products…</span>
+              {Array.from({ length: 5 }, (_, index) => <ShopCardSkeleton key={index} />)}
+            </div>
           ) : productsError ? (
             <p role="alert" className="py-20 text-center text-sm text-rose-dark">{productsError}</p>
           ) : visible.length === 0 ? (

@@ -105,7 +105,9 @@ export type ApiProductVariant = {
   id: number;
   label?: string;
   name?: string;
-  price: number | string;
+  price?: number | string;
+  priceKes?: number | string;
+  availability?: boolean | number | string;
 };
 
 export type ApiPresentation = {
@@ -122,11 +124,15 @@ export type ApiProduct = {
   description?: string;
   ingredients?: string;
   palette?: string;
-  category: string;
+  category?: string;
+  categoryName?: string;
   image?: string | null;
   imageAlt?: string;
   occasions?: string[];
   seasonal?: boolean;
+  isSeasonal?: boolean;
+  seasonNote?: string;
+  startingPriceKes?: number | string | null;
   stock?: number | null;
   available?: boolean;
   variants?: ApiProductVariant[];
@@ -134,6 +140,48 @@ export type ApiProduct = {
   presentations?: Array<string | ApiPresentation>;
   presentation_options?: Array<string | ApiPresentation>;
 };
+
+export type ApiProductList = ApiProduct[] | {
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+  results?: ApiProduct[];
+  items?: ApiProduct[];
+};
+
+export async function getProducts(): Promise<ApiProduct[]> {
+  const apiBase = new URL(getApiBaseUrl());
+  const apiPrefix = apiBase.pathname.replace(/\/+$/, "");
+  const firstPage = new URL(`${apiBase.href.replace(/\/+$/, "")}/products`);
+  firstPage.searchParams.set("ordering", "name");
+  firstPage.searchParams.set("page", "1");
+
+  const products: ApiProduct[] = [];
+  const visited = new Set<string>();
+  let pageUrl: URL | null = firstPage;
+
+  while (pageUrl) {
+    if (pageUrl.origin !== apiBase.origin || !pageUrl.pathname.startsWith(`${apiPrefix}/`)) {
+      throw new Error("The products API returned a pagination link outside the configured API.");
+    }
+    if (visited.has(pageUrl.href)) {
+      throw new Error("The products API returned a repeated pagination link.");
+    }
+    visited.add(pageUrl.href);
+
+    const path: string = `${pageUrl.pathname.slice(apiPrefix.length)}${pageUrl.search}`;
+    const response: ApiProductList = await apiRequest<ApiProductList>(path);
+    if (Array.isArray(response)) {
+      products.push(...response);
+      pageUrl = null;
+    } else {
+      products.push(...(response.results ?? response.items ?? []));
+      pageUrl = response.next ? new URL(response.next, pageUrl) : null;
+    }
+  }
+
+  return products;
+}
 
 export type ApiDeliverySlot = { id: number; label?: string; name?: string };
 export type ApiDeliveryOption = {
@@ -210,7 +258,7 @@ export function normalizeList<T>(value: T[] | { results?: T[]; items?: T[] }): T
   return value.results ?? value.items ?? (value as { products?: T[]; orders?: T[] }).products ?? (value as { orders?: T[] }).orders ?? [];
 }
 
-export function normalizeProduct(raw: ApiProduct, index: number) {
+export function normalizeProduct(raw: ApiProduct) {
   if (!raw.id && !raw.slug) throw new Error("The products response contains an item without an id or slug.");
   const rawVariants = raw.variants ?? raw.price_tiers ?? [];
   const rawPresentations = raw.presentations ?? raw.presentation_options ?? [];
@@ -218,11 +266,22 @@ export function normalizeProduct(raw: ApiProduct, index: number) {
     throw new Error(`Product "${raw.name || raw.id}" is missing variants or presentations.`);
   }
   const variants = rawVariants.map((variant) => {
-    const price = Number(variant.price);
+    const price = Number(variant.priceKes ?? variant.price);
     if (!Number.isInteger(variant.id) || !Number.isFinite(price)) {
       throw new Error(`Product "${raw.name}" contains an invalid variant.`);
     }
-    return { ...variant, price, label: variant.label ?? variant.name ?? `Size ${variant.id}` };
+    const availability = variant.availability;
+    const availabilityValue = typeof availability === "string"
+      ? availability.trim().toLowerCase().replace(/[\s-]+/g, "_")
+      : availability;
+    const available = typeof availabilityValue === "boolean"
+      ? availabilityValue
+      : typeof availabilityValue === "number"
+        ? availabilityValue > 0
+        : typeof availabilityValue === "string"
+          ? !["false", "unavailable", "out_of_stock", "sold_out", "0"].includes(availabilityValue)
+          : undefined;
+    return { ...variant, price, available, label: variant.label ?? variant.name ?? `Size ${variant.id}` };
   });
   const presentations = rawPresentations.map((presentation) =>
     typeof presentation === "string"
@@ -235,18 +294,18 @@ export function normalizeProduct(raw: ApiProduct, index: number) {
   if (presentations.some((presentation) => !presentation.id || !presentation.label)) {
     throw new Error(`Product "${raw.name}" contains an invalid presentation option.`);
   }
-  const fallbackImages = [
-    "photo-1523693916903-027d144a2b7d",
-    "photo-1644248423203-80e317d78aee",
-    "photo-1567418938902-aa650a3eb346",
-    "photo-1674758445398-c2989470fa8a",
-  ];
-  const image = raw.image || `https://images.unsplash.com/${fallbackImages[index % fallbackImages.length]}?auto=format&fit=crop&w=900&q=85`;
+  const image = raw.image ?? "";
   const prices = variants.map((variant) => variant.price);
-  const categoryName = String(raw.category ?? "").toLowerCase();
+  const categoryName = String(raw.categoryName ?? raw.category ?? "").toLowerCase();
   const category = categoryName === "fruit & gifts" || categoryName === "fruit_gifts" || categoryName === "fruit-and-gifts"
     ? "Fruit & gifts"
     : "Flowers";
+  const seasonal = raw.isSeasonal ?? raw.seasonal ?? false;
+  const startingPrice = raw.startingPriceKes === undefined || raw.startingPriceKes === null
+    ? Number.NaN
+    : Number(raw.startingPriceKes);
+  const price = Number.isFinite(startingPrice) ? startingPrice : Math.min(...prices);
+  const allVariantsUnavailable = variants.every((variant) => variant.available === false);
 
   return {
     id: raw.slug || raw.id!,
@@ -255,7 +314,7 @@ export function normalizeProduct(raw: ApiProduct, index: number) {
     ingredients: raw.ingredients ?? "",
     palette: raw.palette ?? "",
     description: raw.description ?? "",
-    price: Math.min(...prices),
+    price,
     prices,
     variants,
     presentations,
@@ -263,10 +322,10 @@ export function normalizeProduct(raw: ApiProduct, index: number) {
     image,
     imageAlt: raw.imageAlt ?? raw.name,
     occasions: raw.occasions ?? [],
-    seasonal: raw.seasonal ?? false,
-    photoBrief: "",
-    tag: raw.seasonal ? "Seasonal" : undefined,
-    stock: raw.stock ?? (raw.available === false ? 0 : null),
+    seasonal,
+    seasonNote: raw.seasonNote ?? "",
+    tag: seasonal ? "Seasonal" : undefined,
+    stock: raw.stock ?? (raw.available === false || allVariantsUnavailable ? 0 : null),
   } as const;
 }
 

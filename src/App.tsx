@@ -140,7 +140,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <article className="group">
       <div className="relative aspect-[4/5] overflow-hidden rounded-none bg-blush/30">
-        <img src={product.image} alt={product.imageAlt} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+        <img src={product.image} alt={product.imageAlt} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
         {product.tag && <span className="absolute left-4 top-4 rounded-full bg-ivory/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-forest backdrop-blur">{product.tag}</span>}
         <button aria-label={`Save ${product.name}`} className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-ivory/90 text-forest transition hover:bg-white"><Icon name="heart" className="size-4" /></button>
       </div>
@@ -317,7 +317,7 @@ function App() {
                   <div><p className="eyebrow">Our flower shop</p><h2 className="section-title">Fresh from our studio</h2><p className="mt-3 max-w-xl text-charcoal/60">Signature bouquets handcrafted in Westlands. Personalise yours with chocolates, a note, or a special gift.</p></div>
                   <a href="#/shop" className="inline-flex items-center gap-2 text-sm font-bold text-forest">View all flowers <Icon name="arrow" className="size-4" /></a>
                 </div>
-                {productsLoading ? <p className="py-12 text-center text-sm text-charcoal/60">Loading flowers…</p> : productsError ? <p role="alert" className="py-12 text-center text-sm text-rose-dark">{productsError}</p> : <div className="mt-12 grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{products.filter((product) => product.category === "Flowers").slice(0, 3).map((product) => <ProductCard key={product.id} product={product} />)}</div>}
+                {productsLoading ? <div role="status" aria-label="Loading flowers" className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><span className="sr-only">Loading flowers…</span>{Array.from({ length: 3 }, (_, index) => <div key={index} aria-hidden="true" className="animate-pulse"><div className="aspect-[4/5] bg-sage/20" /><div className="mt-5 h-6 w-2/3 rounded bg-sage/25" /><div className="mt-3 h-4 w-full rounded bg-sage/20" /><div className="mt-2 h-4 w-1/2 rounded bg-sage/20" /></div>)}</div> : productsError ? <p role="alert" className="py-12 text-center text-sm text-rose-dark">{productsError}</p> : <div className="mt-12 grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{products.filter((product) => product.category === "Flowers").slice(0, 3).map((product) => <ProductCard key={product.id} product={product} />)}</div>}
                 <div className="mt-14 rounded-2xl bg-blush/20 px-6 py-5 text-center text-sm text-charcoal/70 sm:flex sm:items-center sm:justify-center sm:gap-3"><Icon name="sparkle" className="mx-auto mb-2 size-5 text-gold sm:m-0" /><span><strong className="text-forest">Make it truly theirs.</strong> Add chocolates, a handwritten card, or a custom gift to any arrangement.</span></div>
               </div>
             </section>
