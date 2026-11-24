@@ -31,11 +31,11 @@ import {
 /*  Data (swap for your API / database later)                          */
 /* ------------------------------------------------------------------ */
 
-export type Category = "Flowers" | "Fruit & gifts" | "Gifts & cards";
+export type Category = "Flowers" | "Fruit & gifts" | "Gifts" | "Cards";
 
 export type Product = ReturnType<typeof normalizeProduct>;
 
-const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts", "Gifts & cards"];
+const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts", "Gifts", "Cards"];
 
 const WHATSAPP = "254728829124";
 
@@ -690,8 +690,31 @@ export function ShopPage() {
     let list = products.filter(
       (p) => (category === "All" || p.category === category) && `${p.name} ${p.note} ${p.occasions.join(" ")}`.toLowerCase().includes(query.toLowerCase()),
     );
-    if (sort === "low") list = [...list].sort((a, b) => a.price - b.price);
-    if (sort === "high") list = [...list].sort((a, b) => b.price - a.price);
+    if (category === "All") {
+      const categoryOrder: Record<Category, number> = {
+        Flowers: 0,
+        "Fruit & gifts": 1,
+        Gifts: 2,
+        Cards: 3,
+      };
+      list = list
+        .map((product, index) => ({ product, index }))
+        .sort((a, b) => {
+          const byCategory = categoryOrder[a.product.category] - categoryOrder[b.product.category];
+          if (byCategory !== 0) return byCategory;
+          const byPrice = sort === "low"
+            ? a.product.price - b.product.price
+            : sort === "high"
+              ? b.product.price - a.product.price
+              : 0;
+          return byPrice || a.index - b.index;
+        })
+        .map(({ product }) => product);
+    } else if (sort === "low") {
+      list = [...list].sort((a, b) => a.price - b.price);
+    } else if (sort === "high") {
+      list = [...list].sort((a, b) => b.price - a.price);
+    }
     return list;
   }, [products, category, query, sort]);
 
