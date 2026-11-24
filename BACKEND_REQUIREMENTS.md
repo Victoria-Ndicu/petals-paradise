@@ -221,8 +221,9 @@ availability when creating an order.
 ### 4.6 Customer inquiries
 
 - Add a public endpoint for the homepage inquiry form with:
-  customer name, Kenyan contact phone, occasion, preferred contact method,
-  optional details, and server-generated submission time/status.
+  customer name, Kenyan contact phone, email address, occasion, preferred contact
+  method, optional details, and server-generated submission time/status. Require
+  a valid email address for the acknowledgement.
 - Accept the API occasion values `flower_delivery`, `wedding`, `event_decor`,
   `flower_maintenance`, and `funeral`. Allow future additions.
 - Validate and length-limit every field; apply rate limits and anti-spam
@@ -231,21 +232,19 @@ availability when creating an order.
   been accepted for storage.
 - Provide staff access to list, inspect, assign, and update inquiry status
   (for example `new`, `contacted`, `quoted`, `closed`).
-- Make notifications (email/SMS/WhatsApp) configurable. Do not report a
-  notification as sent unless the provider confirms acceptance; notification
-  delivery failure must not discard the inquiry.
+- Send the inquiry acknowledgement by email using the configured transactional
+  email provider. Delivery failure must not discard the inquiry.
 
 ### 4.7 Notifications
 
 - Send payment/order confirmation only after verified payment success.
-- Provide customer-facing order status updates and inquiry acknowledgement
-  through the channels selected/configured by the business (current UI
-  promises WhatsApp and SMS order confirmation).
-- Make notification delivery retryable and idempotent, and retain delivery
-  outcome metadata without logging message secrets or unnecessary personal
-  data.
-- Email receipts are optional in the UI today; support them only when a valid
-  email address is supplied and the business selects an email provider.
+- Send the order-received message after order creation and a payment-confirmed
+  message only after payment confirmation.
+- Send inquiry acknowledgements to the required email address. Preferred
+  phone/WhatsApp/SMS methods are for staff follow-up; automated customer
+  notifications use email.
+- Log email delivery failures without logging message secrets or unnecessary
+  personal data; notification failure must not roll back an order or inquiry.
 
 ## 5. Supplied API contract
 
@@ -313,8 +312,9 @@ created order response and order history. Orders remain `pending_payment`
 until staff confirms payment. There is no client-facing payment-initiation
 endpoint in this API contract.
 
-Inquiry requests contain `name`, `phone`, `occasion`, `preferredContact`, and
-optional `details`. Occasion values are `flower_delivery`, `wedding`,
+Inquiry requests contain `name`, `phone`, `email`, `occasion`, and optional
+`preferredContact` and `details`. Email is required and receives an inquiry
+acknowledgement; the preferred contact method is for staff follow-up. Occasion values are `flower_delivery`,
 `event_decor`, `flower_maintenance`, or `funeral`. Preferred contact values
 are `phone`, `whatsapp`, `sms`, or `email`. Do not send the hidden anti-spam
 `website` field.

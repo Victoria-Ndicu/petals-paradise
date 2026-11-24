@@ -1184,6 +1184,7 @@ function CheckoutForm({ user }: { user: User }) {
   const { deliveryOptions, deliveryLoading, deliveryError } = useCatalogue();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [errorFields, setErrorFields] = useState<Record<string, string>>({});
   const [order, setOrder] = useState<CheckoutOrder | null>(null);
   const idempotencyKey = useRef<string | null>(null);
   const [form, setForm] = useState({
@@ -1198,22 +1199,40 @@ function CheckoutForm({ user }: { user: User }) {
   });
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => {
     idempotencyKey.current = null;
+    setError("");
+    setErrorFields({});
     setForm((current) => ({ ...current, [k]: e.target.value }));
   };
 
   const area = deliveryOptions.find((option) => option.id === form.deliveryArea);
   const selectedSlot = area?.timeSlots.find((slot) => String(slot.id) === form.deliverySlot);
   const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Africa/Nairobi",
+    timeZone: area?.timeZone ?? "Africa/Nairobi",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+  const currentBusinessTime = new Intl.DateTimeFormat("en-GB", {
+    timeZone: area?.timeZone ?? "Africa/Nairobi",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+  const currentBusinessMinutes =
+    Number(currentBusinessTime.find((part) => part.type === "hour")?.value ?? 0) * 60 +
+    Number(currentBusinessTime.find((part) => part.type === "minute")?.value ?? 0);
+  const slotTooSoon = (slot: NonNullable<typeof area>["timeSlots"][number], date: string) => {
+    if (!area || date !== today || !slot.startTime) return false;
+    const [hours, minutes] = slot.startTime.split(":").map(Number);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return false;
+    return hours * 60 + minutes <= currentBusinessMinutes + area.minLeadHours * 60;
+  };
+  const blockedDeliveryDate = Boolean(area?.blockedDates.includes(form.deliveryDate));
   const dateAfterDays = (days: number) => {
     const date = new Date(`${today}T12:00:00+03:00`);
     date.setDate(date.getDate() + days);
     return new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Africa/Nairobi",
+      timeZone: area?.timeZone ?? "Africa/Nairobi",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -1225,8 +1244,17 @@ function CheckoutForm({ user }: { user: User }) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    setErrorFields({});
     if (!area || !selectedSlot) {
       setError("Select an available delivery area and time slot.");
+      return;
+    }
+    if (blockedDeliveryDate) {
+      setError("We can't deliver on that date. Choose another date.");
+      return;
+    }
+    if (slotTooSoon(selectedSlot, form.deliveryDate)) {
+      setError("That delivery time is too soon. Choose a later slot or date.");
       return;
     }
     if (!idempotencyKey.current) idempotencyKey.current = crypto.randomUUID();
@@ -1262,6 +1290,7 @@ function CheckoutForm({ user }: { user: User }) {
       window.scrollTo({ top: 0 });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "We couldn't place your order. Please try again.");
+      setErrorFields(requestError instanceof ApiError ? requestError.fields : {});
       if (requestError instanceof ApiError && requestError.status < 500 && requestError.status !== 409) {
         idempotencyKey.current = null;
       }
@@ -1341,15 +1370,24 @@ function CheckoutForm({ user }: { user: User }) {
                 </select>
               </label>
               <label className="field"><span>Street / building / landmark</span><input required value={form.deliveryAddress} onChange={set("deliveryAddress")} placeholder="e.g. 359 Jalaram Road, 3rd floor" /></label>
-              <label className="field"><span>Delivery date</span><input required type="date" disabled={!area} min={minDate} max={maxDate} value={form.deliveryDate} onChange={set("deliveryDate")} /></label>
+              <label className="field"><span>Delivery date</span><input required type="date" disabled={!area} min={minDate} max={maxDate} value={form.deliveryDate} onChange={(event) => {
+                idempotencyKey.current = null;
+                setError("");
+                setErrorFields({});
+                setForm((current) => ({ ...current, deliveryDate: event.target.value, deliverySlot: "" }));
+              }} /></label>
+              {blockedDeliveryDate && <p className="text-sm text-rose-dark sm:col-span-2">We can't deliver on this date. Please choose another date.</p>}
               <label className="field"><span>Time slot</span>
                 <select required value={form.deliverySlot} onChange={set("deliverySlot")} disabled={!area}>
                   <option value="" disabled>
                     {!area ? "Select a delivery area first" : area.timeSlots.length ? "Select a time slot" : "No time slots available"}
                   </option>
-                  {area?.timeSlots.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+                  {area?.timeSlots.map((slot) => <option key={slot.id} value={slot.id} disabled={slotTooSoon(slot, form.deliveryDate)}>{slot.label}</option>)}
                 </select>
               </label>
+              {area && form.deliveryDate === today && area.timeSlots.length > 0 && area.timeSlots.every((slot) => slotTooSoon(slot, form.deliveryDate)) && (
+                <p className="text-sm text-charcoal/60 sm:col-span-2">All remaining delivery times are too soon for today. Please choose another date.</p>
+              )}
               {!deliveryLoading && !deliveryError && !deliveryOptions.length && (
                 <p role="status" className="text-sm text-rose-dark sm:col-span-2">
                   Delivery areas are not available right now. Please contact us to arrange delivery.
@@ -1371,6 +1409,11 @@ function CheckoutForm({ user }: { user: User }) {
               {deliveryLoading && <p className="mt-4 text-sm text-charcoal/55">Loading delivery options…</p>}
               {deliveryError && <p role="alert" className="mt-4 text-sm text-rose-dark">{deliveryError}</p>}
               {error && <p role="alert" className="mt-4 rounded-xl bg-rose/10 px-4 py-3 text-sm text-rose-dark">{error}</p>}
+              {Object.entries(errorFields).map(([field, message]) => (
+                <p key={field} role="alert" className="mt-2 text-sm text-rose-dark">
+                  {field.replace(/([A-Z])/g, " $1")}: {message}
+                </p>
+              ))}
             </fieldset>
           </div>
 

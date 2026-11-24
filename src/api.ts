@@ -351,15 +351,22 @@ export function normalizeDeliveryOptions(value: ApiDeliveryOption[] | ApiDeliver
   const options = Array.isArray(value) ? value : value.results ?? value.areas ?? [];
   const sharedSlots = Array.isArray(value) ? [] : value.slots ?? [];
   const maxDaysAhead = Array.isArray(value) ? 30 : Number(value.maxDaysAhead ?? 30);
+  const minLeadHours = Array.isArray(value) ? 0 : Number(value.minLeadHours ?? 0);
+  const blockedDates = Array.isArray(value) ? [] : value.blockedDates ?? [];
+  const timeZone = Array.isArray(value) ? "Africa/Nairobi" : value.timeZone ?? "Africa/Nairobi";
   return options.map((option) => ({
     id: String(option.id),
     name: option.name,
     fee: Number(option.fee ?? option.feeKes ?? option.delivery_fee ?? 0),
     leadTimeDays: Number(option.leadTimeDays ?? option.lead_time_days ?? 0),
     maxDaysAhead: Number(option.maxDaysAhead ?? option.max_days_ahead ?? maxDaysAhead),
+    minLeadHours,
+    blockedDates,
+    timeZone,
     timeSlots: (option.timeSlots ?? option.time_slots ?? option.slots ?? sharedSlots).map((slot) => ({
       id: Number(slot.id),
       label: slot.label ?? (slot as ApiDeliverySlot & { name?: string }).name ?? `Slot ${slot.id}`,
+      startTime: slot.start_time,
     })),
   }));
 }

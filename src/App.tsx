@@ -209,7 +209,7 @@ function ServiceDetail({ slug }: { slug: string }) {
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { products, productsLoading, productsError } = useCatalogue();
-  const [inquiry, setInquiry] = useState({ name: "", phone: "", occasion: "", preferredContact: "whatsapp", details: "" });
+  const [inquiry, setInquiry] = useState({ name: "", phone: "", email: "", occasion: "", preferredContact: "whatsapp", details: "" });
   const [inquiryState, setInquiryState] = useState<{ kind: "success" | "error"; message: string; fields?: Record<string, string> } | null>(null);
   const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const route = useHashRoute();
@@ -225,8 +225,8 @@ function App() {
         csrf: false,
         body: inquiry,
       });
-      setInquiry({ name: "", phone: "", occasion: "", preferredContact: "whatsapp", details: "" });
-      setInquiryState({ kind: "success", message: "Thanks — your inquiry has been sent. We’ll be in touch soon." });
+      setInquiry({ name: "", phone: "", email: "", occasion: "", preferredContact: "whatsapp", details: "" });
+      setInquiryState({ kind: "success", message: "Thanks — we’ve received your inquiry and sent a confirmation email. We’ll be in touch soon." });
     } catch (error) {
       setInquiryState({
         kind: "error",
@@ -365,8 +365,10 @@ function App() {
                 <form className="grid gap-5 rounded-3xl bg-ivory p-6 shadow-sm sm:grid-cols-2 sm:p-9" onSubmit={submitInquiry}>
                   <label className="field"><span>Your name</span><input required value={inquiry.name} onChange={(event) => setInquiry({ ...inquiry, name: event.target.value })} placeholder="Jane Wanjiku" /></label>
                   <label className="field"><span>Phone number</span><input required type="tel" value={inquiry.phone} onChange={(event) => setInquiry({ ...inquiry, phone: event.target.value })} placeholder="+254 7..." /></label>
+                  <label className="field"><span>Email address (for confirmation)</span><input required type="email" autoComplete="email" value={inquiry.email} onChange={(event) => setInquiry({ ...inquiry, email: event.target.value })} placeholder="you@example.com" /></label>
                   <label className="field"><span>What are you planning?</span><select required value={inquiry.occasion} onChange={(event) => setInquiry({ ...inquiry, occasion: event.target.value })}><option value="" disabled>Select an occasion</option><option value="flower_delivery">Flower delivery</option><option value="wedding">Wedding</option><option value="event_decor">Event décor</option><option value="flower_maintenance">Flower maintenance</option><option value="funeral">Funeral & sympathy flowers</option></select></label>
                   <label className="field"><span>Preferred contact</span><select value={inquiry.preferredContact} onChange={(event) => setInquiry({ ...inquiry, preferredContact: event.target.value })}><option value="whatsapp">WhatsApp</option><option value="phone">Phone</option><option value="sms">SMS</option><option value="email">Email</option></select></label>
+                  <p className="text-sm text-charcoal/60 sm:col-span-2">We’ll send the acknowledgement to your email. Your preferred contact is for our team’s follow-up.</p>
                   <label className="field sm:col-span-2"><span>Tell us more</span><textarea rows={4} value={inquiry.details} onChange={(event) => setInquiry({ ...inquiry, details: event.target.value })} placeholder="Date, colours, style, budget or any special requests..." /></label>
                   {inquiryState && <div role={inquiryState.kind === "error" ? "alert" : "status"} className={`rounded-xl px-4 py-3 text-sm sm:col-span-2 ${inquiryState.kind === "error" ? "bg-rose/10 text-rose-dark" : "bg-sage/30 text-forest"}`}><p>{inquiryState.message}</p>{inquiryState.fields && <ul className="mt-2 list-inside list-disc">{Object.entries(inquiryState.fields).map(([field, message]) => <li key={field}>{field}: {message}</li>)}</ul>}</div>}
                   <button disabled={inquirySubmitting} type="submit" className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-6 py-4 text-sm font-semibold text-ivory transition hover:bg-forest-light disabled:opacity-60 sm:col-span-2">{inquirySubmitting ? "Sending…" : "Send an inquiry"} <Icon name="arrow" className="size-4" /></button>
