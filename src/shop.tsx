@@ -31,13 +31,13 @@ import {
 /*  Data (swap for your API / database later)                          */
 /* ------------------------------------------------------------------ */
 
-export type Category = "Flowers" | "Fruit & gifts" | "Gifts" | "Cards";
+export type Category = "Flowers" | "Fruits" | "Gifts" | "Cards";
 
 export type Product = ReturnType<typeof normalizeProduct>;
 
-const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts", "Gifts", "Cards"];
+const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruits", "Gifts", "Cards"];
 
-const WHATSAPP = "254728829124";
+const WHATSAPP = "254112036154";
 
 export const money = (n: number) => `KSh ${n.toLocaleString("en-KE")}`;
 
@@ -693,7 +693,7 @@ export function ShopPage() {
     if (category === "All") {
       const categoryOrder: Record<Category, number> = {
         Flowers: 0,
-        "Fruit & gifts": 1,
+        Fruits: 1,
         Gifts: 2,
         Cards: 3,
       };

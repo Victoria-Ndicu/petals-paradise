@@ -2,6 +2,9 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { ApiError, apiRequest } from "./api";
 import { AccountButton, CartButton, CartDrawer, ShopRouter, useCatalogue, useHashRoute, isShopRoute, money, type Product } from "./shop";
 
+const CONTACT_PHONE = "+254112036154";
+const WHATSAPP_PHONE = "254112036154";
+
 const images = {
   hero: "https://images.unsplash.com/photo-1612526031467-2b6bf1f49961?auto=format&fit=crop&w=1600&q=85",
   blush: "https://images.unsplash.com/photo-1523693916903-027d144a2b7d?auto=format&fit=crop&w=900&q=85",
@@ -293,10 +296,10 @@ function App() {
             {nav.map((item) => <a key={item} href={navHref(item)} className="text-sm font-medium text-charcoal/70 transition hover:text-forest">{item}</a>)}
           </nav>
           <div className="flex items-center gap-2">
-            <a href="tel:+254728829124" aria-label="Call Petals Paradise" className="hidden size-10 place-items-center rounded-full text-forest transition hover:bg-sage/20 sm:grid"><Icon name="call" className="size-4" /></a>
+            <a href={`tel:${CONTACT_PHONE}`} aria-label="Call Petals Paradise" className="hidden size-10 place-items-center rounded-full text-forest transition hover:bg-sage/20 sm:grid"><Icon name="call" className="size-4" /></a>
             <AccountButton className="hidden sm:grid" />
             <CartButton />
-            <ButtonLink href="https://wa.me/254728829124" className="hidden sm:inline-flex"><Icon name="whatsapp" className="size-4" /> Order flowers</ButtonLink>
+            <ButtonLink href={`https://wa.me/${WHATSAPP_PHONE}`} className="hidden sm:inline-flex"><Icon name="whatsapp" className="size-4" /> Order flowers</ButtonLink>
           </div>
         </div>
       </header>
@@ -304,7 +307,7 @@ function App() {
       {menuOpen && <div className="fixed inset-0 z-50 bg-forest p-6 text-ivory lg:hidden">
         <div className="flex items-center justify-between"><span className="flex items-center gap-3 font-serif text-2xl"><LogoMark /> PETALS PARADISE</span><button onClick={() => setMenuOpen(false)} aria-label="Close menu"><Icon name="close" /></button></div>
         <nav className="mt-20 flex flex-col gap-7">{nav.map((item) => <a onClick={() => setMenuOpen(false)} key={item} href={navHref(item)} className="font-serif text-4xl text-ivory/90">{item}</a>)}<a onClick={() => setMenuOpen(false)} href="#/account" className="font-serif text-4xl text-ivory/90">My account</a></nav>
-        <ButtonLink href="https://wa.me/254728829124" variant="light" className="mt-12 w-full"><Icon name="whatsapp" /> Order on WhatsApp</ButtonLink>
+        <ButtonLink href={`https://wa.me/${WHATSAPP_PHONE}`} variant="light" className="mt-12 w-full"><Icon name="whatsapp" /> Order on WhatsApp</ButtonLink>
       </div>}
 
       <main>
@@ -395,7 +398,7 @@ function App() {
 
             <section id="contact" className="scroll-mt-20 bg-sage/25 py-24">
               <div className="mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
-                <div><p className="eyebrow">Let’s create something beautiful</p><h2 className="section-title">Tell us about your occasion</h2><p className="mt-5 max-w-md leading-7 text-charcoal/60">Share a few details and our floral team will get back to you with ideas, availability and a tailored quote.</p><div className="mt-8 space-y-4 text-sm"><a href="https://wa.me/254728829124" className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-forest text-ivory"><Icon name="whatsapp" className="size-4" /></span> WhatsApp +254 728 829 124</a><a href="tel:+254728829124" className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-ivory"><Icon name="call" className="size-4" /></span> Call +254 728 829 124</a><span className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-ivory"><Icon name="pin" className="size-4" /></span> Westlands, Nairobi</span></div></div>
+                <div><p className="eyebrow">Let’s create something beautiful</p><h2 className="section-title">Tell us about your occasion</h2><p className="mt-5 max-w-md leading-7 text-charcoal/60">Share a few details and our floral team will get back to you with ideas, availability and a tailored quote.</p><div className="mt-8 space-y-4 text-sm"><a href={`https://wa.me/${WHATSAPP_PHONE}`} className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-forest text-ivory"><Icon name="whatsapp" className="size-4" /></span> WhatsApp +254 112 036 154</a><a href={`tel:${CONTACT_PHONE}`} className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-ivory"><Icon name="call" className="size-4" /></span> Call +254 112 036 154</a><span className="flex items-center gap-3 text-forest"><span className="grid size-10 place-items-center rounded-full bg-ivory"><Icon name="pin" className="size-4" /></span> Westlands, Nairobi</span></div></div>
                 <form className="grid gap-5 rounded-3xl bg-ivory p-6 shadow-sm sm:grid-cols-2 sm:p-9" onSubmit={submitInquiry}>
                   <label className="field"><span>Your name</span><input required value={inquiry.name} onChange={(event) => setInquiry({ ...inquiry, name: event.target.value })} placeholder="Jane Wanjiku" /></label>
                   <label className="field"><span>Phone number</span><input required type="tel" value={inquiry.phone} onChange={(event) => setInquiry({ ...inquiry, phone: event.target.value })} placeholder="+254 7..." /></label>
@@ -444,7 +447,7 @@ function App() {
         <div className="mx-auto grid max-w-7xl gap-10 border-b border-ivory/15 pb-12 md:grid-cols-[1.4fr_0.8fr_0.8fr_1fr]">
           <div><a href="#" className="flex items-center gap-3 font-serif text-2xl"><LogoMark /> PETALS PARADISE</a><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/50">Thoughtful flowers for everyday moments, meaningful celebrations and unforgettable events.</p><a href="https://www.instagram.com/petalsparadiseltd/" target="_blank" rel="noreferrer" aria-label="Petals Paradise on Instagram" className="mt-5 grid size-10 place-items-center rounded-full border border-ivory/20"><Icon name="instagram" className="size-4" /></a></div>
           <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Explore</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#/shop">Shop flowers</a><a href="#services">Services</a><a href="#about">Our story</a></div></div>
-          <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Order</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#contact">Request a quote</a><a href="https://wa.me/254728829124">WhatsApp us</a><a href="tel:+254728829124">Call us</a><a href="#/shop">Delivery info</a></div></div>
+          <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Order</h3><div className="mt-5 flex flex-col gap-3 text-sm text-ivory/60"><a href="#contact">Request a quote</a><a href={`https://wa.me/${WHATSAPP_PHONE}`}>WhatsApp us</a><a href={`tel:${CONTACT_PHONE}`}>Call us</a></div></div>
           <div><h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Visit our studio</h3><p className="mt-5 text-sm leading-6 text-ivory/60">359 Jalaram Road, Westlands, Nairobi<br />Monday – Sunday<br />8:00am – 6:00pm</p></div>
         </div>
         <div className="mx-auto flex max-w-7xl flex-col gap-2 pt-7 text-xs text-ivory/35 sm:flex-row sm:justify-between"><span>© 2025 Petals Paradise. All rights reserved.</span><span>Flowers made with intention in Nairobi.</span></div>
@@ -452,7 +455,7 @@ function App() {
 
       <CartDrawer />
 
-      <a href="https://wa.me/254728829124" aria-label="Chat with Petals Paradise on WhatsApp" className={`fixed bottom-5 right-5 z-30 size-14 place-items-center rounded-full bg-forest text-ivory shadow-xl transition hover:scale-105 ${route.startsWith("/checkout") ? "hidden" : "grid"}`}><Icon name="whatsapp" className="size-6" /></a>
+      <a href={`https://wa.me/${WHATSAPP_PHONE}`} aria-label="Chat with Petals Paradise on WhatsApp" className={`fixed bottom-5 right-5 z-30 size-14 place-items-center rounded-full bg-forest text-ivory shadow-xl transition hover:scale-105 ${route.startsWith("/checkout") ? "hidden" : "grid"}`}><Icon name="whatsapp" className="size-6" /></a>
     </div>
   );
 }

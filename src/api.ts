@@ -325,7 +325,7 @@ export function normalizeProduct(raw: ApiProduct) {
     : /\b(gift|gifts)\b/.test(categoryName)
       ? "Gifts"
       : /\b(fruit|fruits|basket|baskets)\b/.test(categoryName)
-        ? "Fruit & gifts"
+        ? "Fruits"
         : "Flowers";
   const seasonal = raw.isSeasonal ?? raw.seasonal ?? false;
   const startingPrice = raw.startingPriceKes === undefined || raw.startingPriceKes === null
