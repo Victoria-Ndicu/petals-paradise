@@ -314,8 +314,13 @@ export function normalizeProduct(raw: ApiProduct) {
   }
   const image = raw.image ?? "";
   const prices = variants.map((variant) => variant.price);
-  const categoryName = String(raw.categoryName ?? raw.category ?? "").toLowerCase();
-  const category = categoryName === "fruit & gifts" || categoryName === "fruit_gifts" || categoryName === "fruit-and-gifts"
+  const categoryName = `${raw.categoryName ?? ""} ${raw.category ?? ""}`
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+  const giftAddOn = /\b(gift|gifts|card|cards)\b/.test(categoryName);
+  const category = /\b(fruit|fruits|gift|gifts|card|cards|basket|baskets)\b/.test(categoryName)
     ? "Fruit & gifts"
     : "Flowers";
   const seasonal = raw.isSeasonal ?? raw.seasonal ?? false;
@@ -337,6 +342,7 @@ export function normalizeProduct(raw: ApiProduct) {
     variants,
     presentations,
     category,
+    giftAddOn,
     image,
     imageAlt: raw.imageAlt ?? raw.name,
     occasions: raw.occasions ?? [],
