@@ -873,6 +873,7 @@ function AuthForm({ heading, sub }: { heading: string; sub: string }) {
   const [err, setErr] = useState("");
   const [socialNotice, setSocialNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleAuthBusy, setGoogleAuthBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((s) => ({ ...s, [k]: e.target.value }));
@@ -886,10 +887,13 @@ function AuthForm({ heading, sub }: { heading: string; sub: string }) {
   const passwordIsValid = passwordRequirements.every((requirement) => requirement.met);
   async function submitSocial(provider: "google" | "apple", input: { idToken: string; name?: string }) {
     setErr("");
+    if (provider === "google") setGoogleAuthBusy(true);
     try {
       await socialLogin(provider, input);
     } catch (error) {
       setErr(error instanceof Error ? error.message : "Social sign-in failed.");
+    } finally {
+      if (provider === "google") setGoogleAuthBusy(false);
     }
   }
 
@@ -983,6 +987,15 @@ function AuthForm({ heading, sub }: { heading: string; sub: string }) {
           <Btn type="submit" disabled={busy} className="w-full !py-4">{busy ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}</Btn>
         </form>
       </div>
+      {googleAuthBusy && (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-ivory/95 px-6 backdrop-blur-sm" role="status" aria-live="polite">
+          <div className="flex max-w-sm flex-col items-center text-center">
+            <span className="size-12 animate-spin rounded-full border-4 border-forest/15 border-t-forest" aria-hidden="true" />
+            <h2 className="mt-6 font-serif text-3xl text-forest">Signing you in</h2>
+            <p className="mt-2 text-sm leading-6 text-charcoal/60">Google is verifying your account. This should only take a moment.</p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
