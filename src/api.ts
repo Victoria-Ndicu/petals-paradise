@@ -320,9 +320,11 @@ export function normalizeProduct(raw: ApiProduct) {
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
   const giftAddOn = /\b(gift|gifts|card|cards)\b/.test(categoryName);
-  const category = /\b(fruit|fruits|gift|gifts|card|cards|basket|baskets)\b/.test(categoryName)
-    ? "Fruit & gifts"
-    : "Flowers";
+  const category = giftAddOn
+    ? "Gifts & cards"
+    : /\b(fruit|fruits|basket|baskets)\b/.test(categoryName)
+      ? "Fruit & gifts"
+      : "Flowers";
   const seasonal = raw.isSeasonal ?? raw.seasonal ?? false;
   const startingPrice = raw.startingPriceKes === undefined || raw.startingPriceKes === null
     ? Number.NaN

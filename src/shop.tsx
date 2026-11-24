@@ -31,11 +31,11 @@ import {
 /*  Data (swap for your API / database later)                          */
 /* ------------------------------------------------------------------ */
 
-export type Category = "Flowers" | "Fruit & gifts";
+export type Category = "Flowers" | "Fruit & gifts" | "Gifts & cards";
 
 export type Product = ReturnType<typeof normalizeProduct>;
 
-const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts"];
+const CATEGORIES: ("All" | Category)[] = ["All", "Flowers", "Fruit & gifts", "Gifts & cards"];
 
 const WHATSAPP = "254728829124";
 
@@ -701,7 +701,7 @@ export function ShopPage() {
       <section className="border-b border-forest/10 bg-blush/20 py-7 sm:py-9">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <p className="eyebrow">Petals Paradise shop</p>
-          <h1 className="mt-2 font-serif text-4xl leading-none text-forest sm:text-5xl">Shop flowers & gifts</h1>
+          <h1 className="mt-2 font-serif text-4xl leading-none text-forest sm:text-5xl">Shop flowers, fruit & gifts</h1>
         </div>
       </section>
 
@@ -715,9 +715,9 @@ export function ShopPage() {
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-3 lg:flex">
               <label className="relative">
-                <span className="sr-only">Search flowers</span>
+                <span className="sr-only">Search products</span>
                 <Ico name="search" className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-charcoal/40" />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search flowers..." className="w-full rounded-full border border-forest/15 bg-transparent py-3 pl-11 pr-4 text-base focus:border-gold sm:text-sm lg:w-64" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." className="w-full rounded-full border border-forest/15 bg-transparent py-3 pl-11 pr-4 text-base focus:border-gold sm:text-sm lg:w-64" />
               </label>
               <label>
                 <span className="sr-only">Sort by</span>
@@ -739,7 +739,7 @@ export function ShopPage() {
             <p role="alert" className="py-20 text-center text-sm text-rose-dark">{productsError}</p>
           ) : visible.length === 0 ? (
             <div className="py-20 text-center">
-              <p className="font-serif text-3xl text-forest">No flowers found</p>
+              <p className="font-serif text-3xl text-forest">No products found</p>
               <p className="mt-2 text-sm text-charcoal/55">Try another search, or <a className="font-semibold text-forest underline" href={`https://wa.me/${WHATSAPP}`}>ask us on WhatsApp</a> for a custom order.</p>
             </div>
           ) : (

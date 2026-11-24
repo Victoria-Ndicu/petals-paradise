@@ -155,14 +155,14 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-function GiftAddOnCard({ product }: { product: Product }) {
+function GiftAddOnCard({ product, decorative = false }: { product: Product; decorative?: boolean }) {
   return (
-    <a href="#/shop" className="flex w-64 shrink-0 items-center gap-3 rounded-xl border border-forest/10 bg-white p-3 transition hover:border-gold/60 hover:shadow-sm sm:w-auto">
+    <a href="#/shop" tabIndex={decorative ? -1 : undefined} className="flex w-64 shrink-0 items-center gap-3 rounded-xl border border-forest/10 bg-white p-3 transition hover:border-gold/60 hover:shadow-sm sm:w-auto">
       {product.image
         ? <img src={product.image} alt={product.imageAlt} loading="lazy" className="size-16 shrink-0 rounded-lg object-cover" />
         : <span className="grid size-16 shrink-0 place-items-center rounded-lg bg-blush/20 font-serif text-xl text-forest" aria-hidden="true">P</span>}
       <span className="min-w-0 flex-1">
-        <span className="block text-[0.6rem] font-bold uppercase tracking-[0.14em] text-rose-dark">{product.category === "Fruit & gifts" ? "Gift or card" : "Add a little extra"}</span>
+        <span className="block text-[0.6rem] font-bold uppercase tracking-[0.14em] text-rose-dark">Gift or card</span>
         <span className="mt-1 block line-clamp-1 font-serif text-lg leading-tight text-forest">{product.name}</span>
         <span className="mt-1 block text-xs font-semibold text-charcoal/65">{money(product.price)}</span>
       </span>
@@ -266,6 +266,7 @@ function App() {
     { name: "HADASSAH HOTEL", href: "https://superiorhotelskenya.com/hotels-in-nairobi/hadassah-hotel/", style: "font-sans font-semibold tracking-[0.14em]" },
     { name: "FAIRMONT MOUNT KENYA SAFARI CLUB", href: "https://www.fairmont.com/en/hotels/nanyuki/fairmont-mount-kenya-safari-club.html", style: "font-serif tracking-[0.06em]" },
   ];
+  const giftAddOns = products.filter((product) => product.giftAddOn);
 
   // When leaving the shop for a landing section (e.g. #services), scroll to it once the page has rendered.
   useEffect(() => {
@@ -335,14 +336,20 @@ function App() {
                 </div>
                 {productsLoading ? <div role="status" aria-label="Loading flowers" className="mt-5 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3"><span className="sr-only">Loading flowers…</span>{Array.from({ length: 3 }, (_, index) => <div key={index} aria-hidden="true" className="flex animate-pulse items-center gap-3 rounded-xl bg-ivory p-3 sm:block sm:rounded-none sm:bg-transparent sm:p-0"><div className="size-24 shrink-0 rounded-lg bg-sage/20 sm:aspect-[4/5] sm:size-auto sm:rounded-none" /><div className="flex-1 space-y-3 sm:mt-5"><div className="h-5 w-2/3 rounded bg-sage/25" /><div className="h-4 w-full rounded bg-sage/20" /><div className="h-4 w-1/2 rounded bg-sage/20" /></div></div>)}</div> : productsError ? <p role="alert" className="py-8 text-center text-sm text-rose-dark sm:py-12">{productsError}</p> : <div className="mt-5 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-x-7 sm:gap-y-12 lg:grid-cols-3">{products.filter((product) => product.category === "Flowers").slice(0, 3).map((product) => <ProductCard key={product.id} product={product} />)}</div>}
                 <div className="mt-5 flex items-center gap-3 rounded-xl bg-blush/15 px-4 py-3 text-left text-xs leading-5 text-charcoal/70 sm:mt-14 sm:justify-center sm:gap-3 sm:rounded-2xl sm:px-6 sm:py-5 sm:text-center sm:text-sm"><Icon name="sparkle" className="size-5 shrink-0 text-gold" /><span><strong className="text-forest">Make it truly theirs.</strong> Add chocolates, a handwritten card, or a custom gift to any arrangement.</span></div>
-                {!productsLoading && !productsError && products.some((product) => product.giftAddOn) && (
+                {!productsLoading && !productsError && giftAddOns.length > 0 && (
                   <div className="mt-5 sm:mt-8">
                     <div className="mb-3 flex items-end justify-between gap-3">
                       <div><p className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-rose-dark">Little extras</p><h3 className="mt-1 font-serif text-2xl text-forest sm:text-3xl">Gifts & cards</h3></div>
                       <a href="#/shop" className="shrink-0 text-xs font-bold text-forest sm:text-sm">Browse all <Icon name="arrow" className="inline size-3.5 sm:size-4" /></a>
                     </div>
-                    <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
-                      {products.filter((product) => product.giftAddOn).slice(0, 3).map((product) => <GiftAddOnCard key={product.id} product={product} />)}
+                    <div className="partners-marquee" role="region" aria-label="Gifts and cards available to add to your order">
+                      <div className="partners-track">
+                        {[false, true].map((decorative) => (
+                          <div key={String(decorative)} className="partners-group gap-3 pr-3" aria-hidden={decorative}>
+                            {giftAddOns.map((product) => <GiftAddOnCard key={`${product.id}-${decorative}`} product={product} decorative={decorative} />)}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
